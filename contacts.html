@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DANDY Pizza — Контакты</title>
+  <!-- Custom navigation bar styles and font -->
+  <link rel="stylesheet" href="nav-menu/nav-styles.css" />
+    <!-- Replaced external font script with Google Fonts to avoid CORS issues -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* Hide the original category navigation bar */
+    nav.category-bar {
+      display: none !important;
+    }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet">
+  <!-- Shared styles for category bar and chips -->
+  <link rel="stylesheet" href="assets/custom.css">
+  <style>
+    :root {
+      --dandy-green: #04746c;
+      --dandy-yellow: #e4bc6c;
+      --text-on-green: #F3EADB;
+      --link-accent: #f5d27a;
+      --header-overlay: 0.88;
+      --accent-pink: #FF66B3;
+      --primary: #08615b;
+      --secondary: #00706c;
+      --accent: #eebc5c;
+      --danger: #db3f33;
+      --text: var(--text-on-green);
+      --card: #094a45;
+      --chip: #0b5752;
+      --chip-hover: #0e6a64;
+      --chip-border: rgba(255, 255, 255, .12);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--primary); color: var(--text); font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, 'Open Sans', sans-serif; }
+    a { color: inherit; text-decoration: none; }
+    .header { position: sticky; top: 0; z-index: 20; background: linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,0)); backdrop-filter: saturate(1.1) blur(8px); }
+    .topnav { display: flex; gap: 14px; padding: 8px 16px; font-size: 14px; opacity: .9; flex-wrap: wrap; }
+    .topnav a:hover { text-decoration: underline; color: var(--link-accent); }
+    .brandline { padding-bottom: 2px; padding-top: 2px; display: flex; align-items: center; justify-content: space-between; padding: 2px 18px; }
+    .brand-left { display: flex; align-items: center; gap: 14px; }
+    .brand-block { display: flex; align-items: center; gap: 14px; }
+    .brand-rabbit { height: 64px; width: auto; object-fit: contain; }
+    .brand-logo { height: 58px; width: auto; object-fit: contain; display: block; margin: 0 auto; }
+    .place { display: flex; align-items: center; gap: 6px; font-size: 14px; }
+    .brand-right { display: flex; align-items: center; gap: 16px; }
+    .kpi-search { display: flex; align-items: center; gap: 10px; }
+    .kpi { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.08); padding: 6px 10px; border-radius: 999px; border: 1px solid var(--chip-border); }
+    .kpi .star { color: var(--accent); }
+    .profile { background: none; border: none; color: inherit; cursor: pointer; padding: 4px; }
+    .header-tools { position: absolute; right: 20px; top: 20px; display: flex; gap: 15px; align-items: center; }
+    .category-bar { position: sticky; top: 0; z-index: 30; background: var(--secondary); border-bottom: 1px solid var(--chip-border); }
+    .category-scroll { display: flex; gap: 8px; overflow-x: auto; padding: 10px 14px; }
+    .chip { position: relative; display: inline-flex; align-items: center; gap: .25rem; padding: .55rem .8rem; border-radius: 999px; background: var(--chip); border: 1px solid var(--chip-border); cursor: default; white-space: nowrap; user-select: none; }
+    .chip:hover { background: var(--chip-hover); }
+    .chip.active { outline: 2px solid var(--accent); }
+    .letter { position: relative; display: inline-block; font-weight: 900; text-transform: uppercase; line-height: 1; }
+    /* Fire effect omitted for brevity; categories bar shares style with other pages */
+    /* Contacts section layout */
+    .contacts-section { padding: 60px 16px; display: flex; flex-wrap: wrap; gap: 40px; justify-content: space-between; }
+    .contacts-left, .contacts-right { flex: 1 1 45%; max-width: 45%; }
+    .title-img { max-width: 40%; height: auto; margin: 0 0 16px; display: block; }
+    .address { font-size: 24px; line-height: 1.4; margin-bottom: 16px; color: var(--text); }
+    /* The phone number is displayed as an image to perfectly match the reference style */
+    .phone-img {
+      max-width: 50%;
+      height: auto;
+      margin-bottom: 24px;
+      display: block;
+    }
+    /* Company name should remain white like in the reference */
+    .company { font-size: 26px; font-weight: bold; margin-bottom: 16px; color: var(--text); }
+    .req-list { margin-top: 12px; }
+    .req-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 22px; color: var(--text); }
+    .req-name {
+      flex: 0 0 35%;
+      border-bottom: 2px solid var(--dandy-yellow);
+      padding-bottom: 4px;
+      color: var(--text);
+    }
+    /* Highlight the numeric values with the brand yellow colour and draw matching underline */
+    .req-value {
+      flex: 0 0 60%;
+      border-bottom: 2px solid var(--dandy-yellow);
+      padding-bottom: 4px;
+      text-align: right;
+      color: var(--dandy-yellow);
+    }
+    /* The other branches link: the label in white with a golden arrow */
+    .branches-link {
+      display: inline-block;
+      margin-top: 20px;
+      color: var(--text);
+      font-size: 20px;
+      text-decoration: none;
+    }
+    .branches-link .arrow {
+      color: var(--dandy-yellow) !important;
+    }
+    .map-wrapper { width: 100%; margin-top: 40px; }
+    .yandex-map { width: 100%; height: 450px; border: none; }
+    @media (max-width: 768px) {
+      .contacts-left, .contacts-right { max-width: 100%; flex: 1 1 100%; }
+      .req-item { flex-direction: column; align-items: flex-start; }
+      .req-name, .req-value { width: 100%; text-align: left; }
+    }
+  /* Updated nav styles: base, hover/focus, active and click animations */
+.topnav a {
+  display: inline-block;
+  color: var(--text-on-green);
+  font-weight: 600;
+  text-transform: none;
+  white-space: nowrap;
+  text-decoration: none;
+  position: relative;
+  transition: color .15s, font-weight .15s, text-transform .15s;
+}
+.topnav a:hover,
+.topnav a:focus {
+  color: #fff;
+  font-weight: 800;
+  text-transform: uppercase;
+  outline: none;
+}
+.topnav a.is-active {
+  color: #fff;
+  font-weight: 800;
+  text-transform: uppercase;
+  border-bottom: 2px dashed rgba(255,255,255,.35);
+}
+.topnav a:focus-visible {
+  outline: 2px dashed #fff;
+  outline-offset: 2px;
+}
+.topnav a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 2px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .14s cubic-bezier(.2,.8,.2,1);
+}
+.topnav a:active::after {
+  transform: scaleX(1);
+}
+.topnav a:active {
+  transform: scale(0.98);
+}
+@media (prefers-reduced-motion: reduce) {
+  .topnav a,
+  .topnav a::after {
+    transition: none;
+  }
+}
+</style>
+</head>
+<body>
+  <header class="header header--sticky" id="siteHeader">
+    <div class="topnav">
+      <a href="https://vk.com/clips/dandypizza" target="_blank" rel="noopener">Прямой эфир</a>
+      <a href="about.html">О нас</a>
+      <a href="contacts.html" class="is-active" aria-current="page">Контакты</a>
+      <a href="delivery.html">Доставка и оплата</a>
+      <a href="gifts.html">Подарочные&nbsp;сертификаты</a>
+      <a href="jobs.html">Работа&nbsp;в&nbsp;Дэнди</a>
+      <a href="franchise.html">Франчайзинг</a>
+    </div>
+    <div class="brandline">
+      <div class="brand-left">
+        <div class="brand-block">
+          <!-- Use the company logo on internal pages instead of the pink bunny.  -->
+          <img alt="ДЭНДИ пицца и суши" class="brand-logo" src="assets/brand/logo.svg"/>
+        </div>
+        <div class="place"><span class="pin">📍</span><span class="place-text">МО, село Немчиновка</span></div>
+      </div>
+      <div class="brand-right">
+        <!-- Display KPI/time and search on the contacts page, matching other internal pages -->
+        <div class="kpi-search">
+          <div class="kpi"><span class="time">⏱ 32 мин</span><span class="rate"><span class="star">★</span> 4.8</span>
+            <a class="maps" href="#" rel="noopener" target="_blank">Отзыв и адрес</a>
+          </div>
+          <input id="searchBox" placeholder="Поиск..." style="padding:5px 10px; border-radius:8px; border:1px solid #ccc;" type="text"/>
+        </div>
+        <button aria-label="Профиль" class="profile" title="Профиль">
+          <svg fill="none" height="22" viewbox="0 0 24 24" width="22">
+            <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.6"></circle>
+            <path d="M4 20c1.8-3.2 5-5 8-5s6.2 1.8 8 5" stroke="currentColor" stroke-linecap="round" stroke-width="1.6"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <script>
+    // Надёжный поиск: перескан каталога при каждом вводе (работает даже если скрипт стоит до секции "Меню")
+    (function(){
+      function buildText(el){
+        const chunks = [];
+        // видимый текст карточки
+        chunks.push((el.innerText || '').toLowerCase());
+        // имена в атрибутах onclick (openModalByName('...'), addQuick('...'))
+        el.querySelectorAll('[onclick]').forEach(n => {
+          const s = (n.getAttribute('onclick') || '').toLowerCase();
+          if (s) chunks.push(s);
+        });
+        // alt у изображений
+        el.querySelectorAll('img[alt]').forEach(img => {
+          const a = (img.getAttribute('alt') || '').toLowerCase();
+          if (a) chunks.push(a);
+        });
+        return chunks.join(' ');
+      }
+
+      function applyFilter(q){
+        const query = (q || '').trim().toLowerCase();
+        const gridCards = Array.from(document.querySelectorAll('.grid .card'));
+        const miniCards = Array.from(document.querySelectorAll('.scroller .card-mini'));
+        let shown = 0;
+
+        function toggleSet(list){
+          list.forEach(card => {
+            const txt = buildText(card);
+            const match = !query || txt.includes(query);
+            card.style.display = match ? '' : 'none';
+            if (match) shown++;
+          });
+        }
+        toggleSet(gridCards);
+        toggleSet(miniCards);
+
+        // Плашка "ничего не найдено"
+        let msg = document.getElementById('noResultsMsg');
+        if(!msg){
+          msg = document.createElement('div');
+          msg.id = 'noResultsMsg';
+          msg.style.cssText = 'padding:10px 12px;margin:8px 0;background:rgba(0,0,0,.18);color:#F3EADB;border:1px solid rgba(255,255,255,.15);border-radius:10px;display:none;font-size:14px';
+          msg.textContent = 'Ничего не найдено';
+          const ks = document.querySelector('.kpi-search');
+          if (ks && ks.parentNode) ks.parentNode.insertBefore(msg, ks.nextSibling);
+        }
+        msg.style.display = (query && shown === 0) ? '' : 'none';
+      }
+
+      function init(){
+        const input = document.getElementById('searchBox');
+        if(!input) return;
+        let t=null;
+        input.addEventListener('input', ()=>{ clearTimeout(t); t = setTimeout(()=>applyFilter(input.value), 50); });
+        input.addEventListener('keyup', (e)=>{ if(e.key==='Escape'){ input.value=''; applyFilter(''); } });
+        // первый прогон
+        applyFilter(input.value);
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    })();
+    </script>
+  </header>
+    <!-- New condensed navigation bar (replacing the old chip-based menu) -->
+    <nav class="tabs-wrap">
+      <ul class="tabs">
+        <li><a href="index.html" class="tab active">ВСЕ</a></li>
+        <li><a href="#" class="tab">ХИТЫ</a></li>
+        <li><a href="#" class="tab">НОВИНКИ</a></li>
+        <li><a href="#" class="tab">ВОК</a></li>
+        <li><a href="#" class="tab">ПИЦЦА</a></li>
+        <li><a href="#" class="tab">СЕТЫ</a></li>
+        <li><a href="#" class="tab">МАКИ</a></li>
+        <li><a href="#" class="tab">ЗАПЕЧЕННЫЕ</a></li>
+        <li><a href="#" class="tab">ТЕМПУРА</a></li>
+        <li><a href="#" class="tab">ГУНКАНЫ</a></li>
+        <li><a href="#" class="tab">СУШИ</a></li>
+        <li><a href="#" class="tab">ЗАКУСКИ</a></li>
+        <li><a href="#" class="tab">СЭНДВИЧИ</a></li>
+        <li><a href="#" class="tab">САЛАТЫ</a></li>
+        <li><a href="#" class="tab">СУПЫ</a></li>
+        <li><a href="#" class="tab">НАПИТКИ</a></li>
+        <li><a href="#" class="tab">СОУСЫ</a></li>
+        <li><a href="#" class="tab">ЗАВТРАКИ</a></li>
+        <li><a href="#" class="tab">БЛИНЫ</a></li>
+        <li><a href="#" class="tab">ДЕТЯМ</a></li>
+        <li><a href="#" class="tab">7 ПИЦЦА</a></li>
+        <li><a href="#" class="tab">ПИРОГИ</a></li>
+        <li><a href="#" class="tab">КОМБО</a></li>
+        <li><a href="#" class="tab">РОЛЛЫ</a></li>
+      </ul>
+      <div class="slider"></div>
+    </nav>
+  <nav class="category-bar menu-groups" style="display:none;">
+    <div class="category-scroll">
+      <!-- Плашки в виде изображений, ведущие на главную страницу -->
+      <a href="index.html" class="chip"><img src="assets/pink-categories/all.png" alt="Все" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/hits.png" alt="Хиты" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/newitems.png" alt="Новинки" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/wok.png" alt="Wok" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/pizza.png" alt="Пицца" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/sets.png" alt="Сеты" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/maki.png" alt="Маки" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/baked.png" alt="Запеченные" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/tempura.png" alt="Темпура" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/gunkans.png" alt="Гунканы" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/sushi.png" alt="Суши" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/snacks.png" alt="Закуски" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/sandwiches.png" alt="Сэндвичи" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/salads.png" alt="Салаты" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/soups.png" alt="Супы" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/drinks.png" alt="Напитки" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/sauces.png" alt="Соусы" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/breakfasts.png" alt="Завтраки" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/pancakes.png" alt="Блины" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/children.png" alt="Детям" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/7pizza.png" alt="7 пицца" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/pies.png" alt="Пироги" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/combo.png" alt="Комбо" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/rolls.png" alt="Роллы" onerror="this.style.display='none'" /></a>
+    </div>
+    <!-- Бегунок подчёркивания для выделения активной категории -->
+    <div class="chip-underline"><div class="thumb"></div></div>
+  </nav>
+  <main>
+    <section class="contacts-section">
+      <div class="contacts-left">
+        <img src="assets/contacts-title.png" alt="Контакты" class="title-img" />
+        <p class="address">Московская область,<br/>Одинцовский городской округ,<br/>село Немчиновка,<br/>Советский проспект, 104</p>
+        <img src="assets/contact-phone.png" alt="+7 925 934-77-28" class="phone-img" />
+      </div>
+      <div class="contacts-right">
+        <img src="assets/requisites-title.png" alt="Реквизиты" class="title-img" />
+        <p class="company">ИП Давыдов Сергей Васильевич</p>
+        <div class="req-list">
+          <div class="req-item"><span class="req-name">ОГРНИП</span><span class="req-value">320508100175480</span></div>
+          <div class="req-item"><span class="req-name">ИНН</span><span class="req-value">5032274644373</span></div>
+        </div>
+        <a href="#" class="branches-link">Другие филиалы <span class="arrow">»»</span></a>
+      </div>
+    </section>
+    <div class="map-wrapper">
+      <!-- Yandex map embed by address -->
+      <iframe class="yandex-map" src="https://yandex.ru/map-widget/v1/?text=Московская%20область%2C%20Одинцовский%20городской%20округ%2C%20село%20Немчиновка%2C%20Советский%20проспект%2C%20104" allowfullscreen>
+      </iframe>
+    </div>
+  </main>
+
+  <style>
+  /* Анимация появления футера */
+  .footer-animated {
+    opacity: 0;
+    transform: translateY(50px);
+    animation: footerSlideUp 1.2s ease-out 0.5s forwards;
+  }
+
+  @keyframes footerSlideUp {
+    0% {
+      opacity: 0;
+      transform: translateY(50px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .phone-number:hover {
+    transform: scale(1.1);
+    text-shadow:3px 3px 0px #000, -2px -2px 0px #000, 2px -2px 0px #000, -2px 2px 0px #000;
+  }
+
+  .footer-socials a:hover {
+    transform: scale(1.1);
+  }
+
+  .footer-right a:hover {
+    transform: scale(1.05);
+  }
+  </style>
+
+<!-- DANDY Footer Template - Start -->
+<style>
+/* Переменные цветов для футера */
+:root {
+    --gc-6: #8B4513; /* Цвет для копирайта */
+    --gc-7: #000000; /* Черный фон футера */
+}
+
+/* Анимации футера */
+.phone-bounce:hover img {
+    animation: phoneBounce 0.6s ease-in-out;
+}
+
+@keyframes phoneBounce {
+    0% {
+        transform: scale(1);
+    }
+    30% {
+        transform: scale(1.3);
+    }
+    50% {
+        transform: scale(1.15);
+    }
+    70% {
+        transform: scale(1.25);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+footer a[href*="instagram.com"]:hover,
+footer a[href*="tiktok.com"]:hover,
+footer a[href*="vk.com"]:hover,
+footer a[href*="ok.ru"]:hover,
+footer a[href*="youtube.com"]:hover,
+footer a[href*="facebook.com"]:hover,
+footer a[href*="pinterest.com"]:hover,
+footer a[href*="twitter.com"]:hover,
+footer a[href*="weibo.com"]:hover,
+footer a[href*="t.me"]:hover,
+footer a[href*="wa.me"]:hover {
+    transform: scale(1.1);
+}
+
+/* Стили для иконок внутри ссылок */
+footer a img {
+    pointer-events: none; /* Иконки не реагируют на клики, клик проходит к ссылке */
+}
+
+footer a[style*="background: #E91E63"]:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(233, 30, 99, 0.4);
+}
+
+/* Анимация при наведении на кнопку скидки */
+.discount-button:hover {
+    font-size: 18px !important;
+    transition: font-size 0.3s ease;
+}
+
+.discount-button:hover img {
+    transform: scale(1.2);
+    transition: transform 0.3s ease;
+}
+
+/* Анимация нажатия для кнопки скидки */
+.discount-button:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+}
+
+.discount-button:active img {
+    transform: scale(1.2);
+    transition: transform 0.1s ease;
+}
+
+/* Адаптивность футера */
+@media (max-width: 768px) {
+    footer > div {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    
+    footer > div > div:last-child {
+        align-items: center;
+    }
+    
+    footer > div > div:last-child > div {
+        text-align: center;
+    }
+}
+
+/* Анимация выплывания футера при прокрутке */
+.footer-animated {
+    opacity: 0;
+    transform: translateY(50px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.footer-animated.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Эффект при наведении на "Политика конфиденциальности" */
+.privacy-link:hover {
+    color: #FFB366 !important;
+    text-shadow: 0 0 8px rgba(255, 107, 53, 0.5);
+    transform: scale(1.05);
+}
+</style>
+
+<footer class="footer-animated" style="background: var(--gc-7); color: #fff; font-family: inherit; padding: 32px 16px 20px; margin-top: 40px;">
+    <div style="display: flex; gap: 24px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; max-width: 1200px; margin: 0 auto;">
+        
+        <!-- Левая колонка -->
+        <div style="min-width: 260px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <img src="assets/dandy_logo_eng.png" alt="DANDY" style="height: 32px; width: auto;" onerror="this.style.display='none'"/>
+                <div style="font-size: 12px; opacity: 0.9;">Пицца<br/>и суши</div>
+            </div>
+            <div style="font-size: 14px; opacity: 0.9;">Доставка работает<br/><span style="font-weight: 700;">ежедневно с 11:00 до 23:00.</span></div>
+        </div>
+        
+        <!-- Центральная колонка -->
+        <div style="flex: 1; min-width: 260px; text-align: center;">
+            <a href="tel:+79259347728" class="phone-bounce" style="display: inline-block; text-decoration: none; margin-bottom: 10px;"><img src="assets/telephone.png" alt="+7 925 934-77-28" style="height: 40px; width: auto;" onerror="this.style.display='none'"/></a>
+            
+            <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 8px; align-items: center;">
+                <!-- Первый ряд социальных сетей (6 иконок) -->
+                <div style="display: flex; gap: 6px; justify-content: center;">
+                    <a href="https://www.instagram.com/dandypizza.moscow/" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s ease;"><img src="social-icons/instagram.png" alt="Instagram" width="28" height="28"/></a>
+                    <a href="https://www.tiktok.com/@dandypizza.moscow" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s ease;"><img src="social-icons/tiktok.png" alt="TikTok" width="28" height="28"/></a>
+                    <a href="https://vk.com/dandypizza" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s ease;"><img src="social-icons/vk.png" alt="VK" width="28" height="28"/></a>
+                    <a href="https://ok.ru/group/70000001234567" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s ease;"><img src="social-icons/ok.png" alt="OK" width="28" height="28"/></a>
+                    <a href="https://www.youtube.com/@dandypizza" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s ease;"><img src="social-icons/youtube.png" alt="YouTube" width="28" height="28"/></a>
+                    <a href="https://www.facebook.com/dandypizza.moscow" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s ease;"><img src="social-icons/facebook.png" alt="Facebook" width="28" height="28"/></a>
+                </div>
+                <!-- Второй ряд социальных сетей (5 иконок) -->
+                <div style="display: flex; gap: 6px; justify-content: center;">
+                    <a href="https://www.pinterest.com/dandypizza" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s ease;"><img src="social-icons/pinterest.png" alt="Pinterest" width="28" height="28"/></a>
+                    <a href="https://twitter.com/dandypizza" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s ease;"><img src="social-icons/twitter.png" alt="Twitter" width="28" height="28"/></a>
+                    <a href="https://weibo.com/dandypizza" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s ease;"><img src="social-icons/weibu.png" alt="Weibo" width="28" height="28"/></a>
+                    <a href="https://t.me/dandypizza" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s ease;"><img src="social-icons/telegram.png" alt="Telegram" width="28" height="28"/></a>
+                    <a href="https://wa.me/79259347728" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s ease;"><img src="social-icons/whatsapp.png" alt="WhatsApp" width="28" height="28"/></a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Правая колонка -->
+        <div style="min-width: 240px; display: flex; flex-direction: column; align-items: center;">
+            <a href="#" class="discount-button" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #E91E63; color: #fff; text-decoration: none; padding: 16px 24px; border-radius: 30px; font-weight: 700; font-size: 16px; transition: all 0.3s ease; margin-bottom: 12px; box-shadow: 0 4px 15px rgba(233, 30, 99, 0.3); text-align: center; min-width: 200px;">
+                Получи скидку <img src="assets/10%.png" alt="10%" style="height: 24px; width: auto; margin-left: 4px;"/>
+            </a>
+            <div style="font-size: 12px; opacity: 0.9; text-align: center; max-width: 200px; line-height: 1.4;">
+                на следующий заказ, подпишись на наши соц сети....
+            </div>
+        </div>
+    </div>
+    
+    <!-- Нижняя часть футера -->
+    <div style="max-width: 1200px; margin: 16px auto 0; padding-top: 14px; display: flex; justify-content: space-between; align-items: center; gap: 16px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 12px; opacity: 0.85;">
+        <a href="#" class="privacy-link" style="color: #FF6B35; text-decoration: none; font-weight: 600; font-size: 14px; transition: all 0.3s ease;">Политика конфиденциальности</a>
+        <div style="color: #fff;">© 2024 Москва, «Дэнди»</div>
+    </div>
+</footer>
+<!-- DANDY Footer Template - End -->
+
+<script>
+// Анимация футера при прокрутке
+document.addEventListener('DOMContentLoaded', function() {
+    const footer = document.querySelector('.footer-animated');
+    
+    if (footer) {
+        // Функция для проверки видимости футера
+        function checkFooterVisibility() {
+            // Футер появляется только после прокрутки минимум на 500px
+            // И только если пользователь прокрутил минимум 30% от высоты документа
+            const scrolled = window.scrollY;
+            const documentHeight = document.documentElement.scrollHeight;
+            const windowHeight = window.innerHeight;
+            const scrollPercent = (scrolled / (documentHeight - windowHeight)) * 100;
+            
+            if (scrolled > 500 && scrollPercent > 30) {
+                footer.classList.add('visible');
+                // Убираем обработчик после первого показа
+                window.removeEventListener('scroll', checkFooterVisibility);
+            }
+        }
+        
+        // Добавляем обработчик скролла
+        window.addEventListener('scroll', checkFooterVisibility);
+    }
+});
+</script>
+  <!-- Slider functionality for category bar -->
+  <script src="assets/chip-slider.js"></script>
+    <script src="nav-menu/nav-script.js"></script>
+  <!-- Profile Button Handler -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const profileButton = document.querySelector('.profile');
+    if (profileButton) {
+        profileButton.addEventListener('click', function() {
+            window.location.href = 'profile.html';
+        });
+    }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+# DANDY Pizza & Sushi - Apache Configuration для REG.RU
+# Host: nemchinovka.dandypizzasushi.com
+
+# ============================================
+# 0. DirectoryIndex
+# ============================================
+DirectoryIndex index.html index.php index.htm
+
+# ============================================
+# 1. Включение mod_rewrite и базовые настройки
+# ============================================
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+    
+    # Блокируем прямой доступ к init-db.php
+    RewriteCond %{REQUEST_URI} ^/api/init-db\.php$
+    RewriteRule ^ - [F,L]
+    
+    # API маршрутизация - ВАЖНО для работы API
+    # Все запросы к /api/* перенаправляем на api/index.php
+    # Проверяем, что это НЕ существующий файл
+    RewriteCond %{REQUEST_URI} ^/api/
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^api/(.*)$ api/index.php [QSA,L]
+    
+    # Если запрос к /api без пути, тоже перенаправляем на index.php
+    RewriteCond %{REQUEST_URI} ^/api$
+    RewriteRule ^api/?$ api/index.php [QSA,L]
+    
+    # ✅ Разрешаем доступ к статическим файлам из storage
+    RewriteCond %{REQUEST_URI} ^/storage/
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+    
+    # Если файл или директория существуют, пропускаем дальше (для не-API запросов)
+    RewriteCond %{REQUEST_URI} !^/api/
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+</IfModule>
+
+# ============================================
+# 2. Защита файлов конфигурации
+# ============================================
+<FilesMatch "^(config\.php|\.env|\.git.*|composer\.(json|lock)|package\.json|package-lock\.json)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Защита SQLite базы данных
+<FilesMatch "\.(sqlite|sqlite3|db)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Защита логов
+<FilesMatch "\.log$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Защита init-db.php
+<Files "init-db.php">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# ============================================
+# 3. PHP Settings (опционально, работает только с mod_php)
+# ============================================
+<IfModule mod_php.c>
+    php_value upload_max_filesize 100M
+    php_value post_max_size 100M
+    php_value max_execution_time 300
+    php_value memory_limit 256M
+    php_value default_charset UTF-8
+</IfModule>
+
+# ============================================
+# 4. CORS Headers для API
+# ============================================
+<IfModule mod_headers.c>
+    <FilesMatch "api/index\.php$">
+        Header set Access-Control-Allow-Origin "*"
+        Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+        Header set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+    </FilesMatch>
+</IfModule>
+
+# ============================================
+# 5. Базовые настройки
+# ============================================
+Options -Indexes
+AddDefaultCharset UTF-8
+
+
+# =================================================
+# 5. Яндекс Еда - OAuth 2.0 Endpoint Rewrite Rules
+# =================================================
+# Для интеграции с Яндекс Еда API требуется OAuth endpoint
+# URL: /security/oauth/token
+
+<IfModule mod_rewrite.c>
+    # Перенаправление запросов к OAuth endpoint
+    RewriteRule ^security/oauth/token/?$ /security/oauth/token.php [L,QSA]
+</IfModule>
+
+# Защита директории security (только POST запросы к token.php)
+<IfModule mod_rewrite.c>
+    RewriteCond %{REQUEST_URI} ^/security/oauth/ [NC]
+    RewriteCond %{REQUEST_METHOD} !POST
+    RewriteCond %{REQUEST_URI} !token\.php$
+    RewriteRule ^(.*)$ - [F,L]
+</IfModule>

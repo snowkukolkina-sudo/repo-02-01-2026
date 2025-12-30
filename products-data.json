@@ -1,0 +1,1042 @@
+[
+  {
+    "id": "prod-1759927571764-jzupp0epr",
+    "name": "2024.09.27__043",
+    "category": "Другое",
+    "price": 269,
+    "image": "assets/products/1759927571743-67ktjvvdy.jpg",
+    "description": "2024.09.27__043 - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927571787-5ezrhr83u",
+    "name": "2024.09.27__044",
+    "category": "Другое",
+    "price": 299,
+    "image": "assets/products/1759927571769-74bta23m2.jpg",
+    "description": "2024.09.27__044 - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927571849-5mc7mbqiu",
+    "name": "2024.09.27__045",
+    "category": "Другое",
+    "price": 429,
+    "image": "assets/products/1759927571806-7rttotdkq.jpg",
+    "description": "2024.09.27__045 - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927571873-k636lejqq",
+    "name": "2024.09.27__046",
+    "category": "Другое",
+    "price": 349,
+    "image": "assets/products/1759927571850-1kfovif63.jpg",
+    "description": "2024.09.27__046 - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927571897-k94gl0dvp",
+    "name": "2024.09.27__047",
+    "category": "Другое",
+    "price": 209,
+    "image": "assets/products/1759927571877-3b3yj125d.jpg",
+    "description": "2024.09.27__047 - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927571920-wg2n9c1d6",
+    "name": "2024.09.27__048",
+    "category": "Другое",
+    "price": 219,
+    "image": "assets/products/1759927571898-o7ju7nk7d.jpg",
+    "description": "2024.09.27__048 - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927571944-eg4bnyaes",
+    "name": "2024.09.27__049",
+    "category": "Другое",
+    "price": 249,
+    "image": "assets/products/1759927571923-i9hxdhad6.jpg",
+    "description": "2024.09.27__049 - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927571964-dzcl27i37",
+    "name": "2024.09.27__050",
+    "category": "Другое",
+    "price": 459,
+    "image": "assets/products/1759927571945-to2ycl8md.jpg",
+    "description": "2024.09.27__050 - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927571976-e4go58i81",
+    "name": "Bavarskaya",
+    "category": "Другое",
+    "price": 269,
+    "image": "assets/products/1759927571970-19poq8q6r.jpg",
+    "description": "Bavarskaya - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927571993-kt7yqshua",
+    "name": "Burger",
+    "category": "Другое",
+    "price": 449,
+    "image": "assets/products/1759927571989-8vyr4exk4.jpg",
+    "description": "Burger - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572000-a1imh8t9f",
+    "name": "Pink Pantera",
+    "category": "Другое",
+    "price": 469,
+    "image": "assets/products/1759927571995-my9nrbkdm.webp",
+    "description": "Pink Pantera - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572005-9qvwvxjno",
+    "name": "Shrimp Tempura With Avocado Puree 180",
+    "category": "Другое",
+    "price": 459,
+    "image": "assets/products/1759927572003-93ywdxax9.webp",
+    "description": "Shrimp Tempura With Avocado Puree 180 - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572012-velbwjvfb",
+    "name": "Vegetariana",
+    "category": "Другое",
+    "price": 239,
+    "image": "assets/products/1759927572007-bplmgi59w.jpg",
+    "description": "Vegetariana - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572025-54rfqzt9y",
+    "name": "Баварская",
+    "category": "Пицца",
+    "price": 639,
+    "image": "assets/products/1759927572013-drzh45by7.jpg",
+    "description": "Баварская - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572031-02gziopzt",
+    "name": "Беллучи",
+    "category": "Пицца",
+    "price": 809,
+    "image": "assets/products/1759927572030-wo13rjq46.jpg",
+    "description": "Беллучи - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572036-9svv96xkp",
+    "name": "Болоньезе",
+    "category": "Пицца",
+    "price": 869,
+    "image": "assets/products/1759927572032-q872n9kjy.jpg",
+    "description": "Болоньезе - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572086-i0izdtbc1",
+    "name": "большой куш",
+    "category": "Другое",
+    "price": 479,
+    "image": "assets/products/1759927572037-ekwt1lg7r.jpeg",
+    "description": "большой куш - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572096-3eb48h9gh",
+    "name": "бонито запеченный",
+    "category": "Роллы",
+    "price": 459,
+    "image": "assets/products/1759927572095-p8o0sokh6.jpeg",
+    "description": "бонито запеченный - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "280г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572115-hxz5k0foi",
+    "name": "васаби",
+    "category": "Другое",
+    "price": 389,
+    "image": "assets/products/1759927572100-glae2do6e.jpg",
+    "description": "васаби - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572127-5zc0fhrac",
+    "name": "Вегетарианская",
+    "category": "Другое",
+    "price": 469,
+    "image": "assets/products/1759927572122-turuu8gz1.jpg",
+    "description": "Вегетарианская - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572135-ev2mve4rv",
+    "name": "Восточная красавица",
+    "category": "Пицца",
+    "price": 699,
+    "image": "assets/products/1759927572133-7n2894ynk.jpg",
+    "description": "Восточная красавица - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572145-0c2t1qdd9",
+    "name": "Гавайская",
+    "category": "Пицца",
+    "price": 639,
+    "image": "assets/products/1759927572141-tfzq22bmp.jpg",
+    "description": "Гавайская - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572147-zan8auci3",
+    "name": "Грибная",
+    "category": "Пицца",
+    "price": 679,
+    "image": "assets/products/1759927572145-cucbnfhmy.jpg",
+    "description": "Грибная - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572155-mja1hlt24",
+    "name": "Грин мун",
+    "category": "Пицца",
+    "price": 529,
+    "image": "assets/products/1759927572151-72o4b7bqd.jpg",
+    "description": "Грин мун - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572159-n9bp45wmg",
+    "name": "Джессика",
+    "category": "Пицца",
+    "price": 769,
+    "image": "assets/products/1759927572157-bugtr1ozl.jpg",
+    "description": "Джессика - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572165-ljjq5x15l",
+    "name": "Джованни",
+    "category": "Пицца",
+    "price": 619,
+    "image": "assets/products/1759927572163-qi6jvr6mk.jpg",
+    "description": "Джованни - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572179-em3ndmbzs",
+    "name": "Дьяволита",
+    "category": "Пицца",
+    "price": 659,
+    "image": "assets/products/1759927572171-sjke9enzp.jpg",
+    "description": "Дьяволита - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572199-te9pch7mg",
+    "name": "заставка_page-0001",
+    "category": "Другое",
+    "price": 429,
+    "image": "assets/products/1759927572181-kqj6xue1m.jpg",
+    "description": "заставка_page-0001 - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572205-eh1bajiws",
+    "name": "икра краснаяч",
+    "category": "Другое",
+    "price": 249,
+    "image": "assets/products/1759927572200-rprg0ssyv.jpg",
+    "description": "икра краснаяч - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572219-7ua1ghs3v",
+    "name": "икра массага оранжевая",
+    "category": "Другое",
+    "price": 329,
+    "image": "assets/products/1759927572206-65gwt3mnl.jpg",
+    "description": "икра массага оранжевая - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572243-3ox24tl9z",
+    "name": "имбирь..",
+    "category": "Другое",
+    "price": 339,
+    "image": "assets/products/1759927572237-czv8ps3zm.jpg",
+    "description": "имбирь.. - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572249-x5925xg59",
+    "name": "имбирь",
+    "category": "Другое",
+    "price": 369,
+    "image": "assets/products/1759927572248-bggjjpdqj.jpg",
+    "description": "имбирь - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572261-ofq0reoir",
+    "name": "искра",
+    "category": "Другое",
+    "price": 459,
+    "image": "assets/products/1759927572251-0s8hyxson.jpeg",
+    "description": "искра - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572272-pucwqpq69",
+    "name": "Кабанчик",
+    "category": "Пицца",
+    "price": 509,
+    "image": "assets/products/1759927572267-e848sn2c0.jpg",
+    "description": "Кабанчик - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572276-4rjvwam0g",
+    "name": "Карбонара",
+    "category": "Пицца",
+    "price": 499,
+    "image": "assets/products/1759927572273-mstpgzdoo.jpg",
+    "description": "Карбонара - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572280-ljtrkd4m6",
+    "name": "Картофель по-деревенски",
+    "category": "Закуски",
+    "price": 199,
+    "image": "assets/products/1759927572279-2gu5oxxra.jpeg",
+    "description": "Картофель по-деревенски - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572285-b1s9lygjw",
+    "name": "Картошка Фри",
+    "category": "Закуски",
+    "price": 259,
+    "image": "assets/products/1759927572284-klbtmsvkn.jpeg",
+    "description": "Картошка Фри - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572306-p7tydufo3",
+    "name": "классика лайть",
+    "category": "Другое",
+    "price": 269,
+    "image": "assets/products/1759927572286-7witbddnj.jpeg",
+    "description": "классика лайть - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572326-bemeawzte",
+    "name": "классика сет",
+    "category": "Сеты",
+    "price": 1389,
+    "image": "assets/products/1759927572316-hl9o6flvb.jpeg",
+    "description": "классика сет - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572353-6olmqbbtb",
+    "name": "Коза ностра",
+    "category": "Пицца",
+    "price": 569,
+    "image": "assets/products/1759927572330-nl9sv7qz5.jpg",
+    "description": "Коза ностра - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572358-oogbgwm70",
+    "name": "криспи краб",
+    "category": "Роллы",
+    "price": 499,
+    "image": "assets/products/1759927572357-4cibgsfny.jpeg",
+    "description": "криспи краб - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "280г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572364-k8pyvlvsr",
+    "name": "луковые кольца",
+    "category": "Закуски",
+    "price": 209,
+    "image": "assets/products/1759927572362-d7fz134xh.jpeg",
+    "description": "луковые кольца - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572370-xx91h7uvp",
+    "name": "магуро",
+    "category": "Роллы",
+    "price": 349,
+    "image": "assets/products/1759927572368-enrht0bev.jpg",
+    "description": "магуро - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "280г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572382-oxlm0nspb",
+    "name": "Маргарита",
+    "category": "Пицца",
+    "price": 739,
+    "image": "assets/products/1759927572374-c3d734jit.jpg",
+    "description": "Маргарита - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572389-ab59g6rmb",
+    "name": "нагетсы",
+    "category": "Закуски",
+    "price": 179,
+    "image": "assets/products/1759927572385-b3si93xqr.jpeg",
+    "description": "нагетсы - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572406-mbg1isev9",
+    "name": "ниндзяф",
+    "category": "Роллы",
+    "price": 439,
+    "image": "assets/products/1759927572400-32xxfm6tk.jpeg",
+    "description": "ниндзяф - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "280г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572412-bikmlmvwy",
+    "name": "нори",
+    "category": "Другое",
+    "price": 289,
+    "image": "assets/products/1759927572407-tphtgqzdt.jpg",
+    "description": "нори - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572413-fnrbtnmxv",
+    "name": "острые крылбья",
+    "category": "Закуски",
+    "price": 339,
+    "image": "assets/products/1759927572413-xj14qn524.jpeg",
+    "description": "острые крылбья - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572425-nz1925vw3",
+    "name": "Папай моряк",
+    "category": "Пицца",
+    "price": 729,
+    "image": "assets/products/1759927572419-t0sswlep8.jpg",
+    "description": "Папай моряк - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572431-jtfffjh5r",
+    "name": "Пепперони",
+    "category": "Пицца",
+    "price": 679,
+    "image": "assets/products/1759927572425-v7o5v4ym5.jpg",
+    "description": "Пепперони - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572454-puyztve5b",
+    "name": "Поке с гребешком",
+    "category": "Поке",
+    "price": 509,
+    "image": "assets/products/1759927572437-6v3kmyu8k.jpg",
+    "description": "Поке с гребешком - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572467-ljirs5t36",
+    "name": "Поке с креветкой",
+    "category": "Поке",
+    "price": 449,
+    "image": "assets/products/1759927572455-t1e218tdf.jpg",
+    "description": "Поке с креветкой - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572484-hvub5u2so",
+    "name": "Поке с лососем",
+    "category": "Поке",
+    "price": 459,
+    "image": "assets/products/1759927572467-6bguv33j1.jpg",
+    "description": "Поке с лососем - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572503-4ft5rm6mw",
+    "name": "Поке с тунцом",
+    "category": "Поке",
+    "price": 459,
+    "image": "assets/products/1759927572486-mj611t04s.jpg",
+    "description": "Поке с тунцом - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572510-u7eg7jryl",
+    "name": "Портофино",
+    "category": "Пицца",
+    "price": 799,
+    "image": "assets/products/1759927572503-6lcdeez9c.jpg",
+    "description": "Портофино - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572521-k8v231mxt",
+    "name": "с тунцом",
+    "category": "Пицца",
+    "price": 539,
+    "image": "assets/products/1759927572516-6eet8mkm4.jpg",
+    "description": "с тунцом - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572529-1ygxb78w7",
+    "name": "салон мдж",
+    "category": "Другое",
+    "price": 409,
+    "image": "assets/products/1759927572522-q7h5wp22p.jpg",
+    "description": "салон мдж - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572539-hptmtqsw1",
+    "name": "Сальмоне",
+    "category": "Пицца",
+    "price": 599,
+    "image": "assets/products/1759927572533-atjd6rxkl.jpg",
+    "description": "Сальмоне - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572553-k1qqils5g",
+    "name": "сет жара",
+    "category": "Сеты",
+    "price": 899,
+    "image": "assets/products/1759927572541-gsgy8jnbq.jpeg",
+    "description": "сет жара - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572600-8i1ywhk0g",
+    "name": "сет темпура",
+    "category": "Сеты",
+    "price": 1079,
+    "image": "assets/products/1759927572577-kd7qs34g6.jpeg",
+    "description": "сет темпура - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572625-y2fggw001",
+    "name": "сет унаги дрим",
+    "category": "Сеты",
+    "price": 1159,
+    "image": "assets/products/1759927572610-gggymssnb.jpeg",
+    "description": "сет унаги дрим - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572631-cxiwz38iq",
+    "name": "Соус Барбекю",
+    "category": "Соусы",
+    "price": 49,
+    "image": "assets/products/1759927572625-qml7fhcu6.jpg",
+    "description": "Соус Барбекю - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572637-vk9u3d27w",
+    "name": "Соус брусничный",
+    "category": "Соусы",
+    "price": 59,
+    "image": "assets/products/1759927572635-gp4ryw2aw.jpeg",
+    "description": "Соус брусничный - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572643-45pegzra1",
+    "name": "Соус бургер",
+    "category": "Соусы",
+    "price": 69,
+    "image": "assets/products/1759927572638-pm4h950ww.jpeg",
+    "description": "Соус бургер - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572648-vzl15b0oh",
+    "name": "соус горчичный",
+    "category": "Соусы",
+    "price": 59,
+    "image": "assets/products/1759927572645-vw1130vz1.jpg",
+    "description": "соус горчичный - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572661-nag48c0nn",
+    "name": "Соус ореховый",
+    "category": "Соусы",
+    "price": 49,
+    "image": "assets/products/1759927572655-wawjcdkdj.jpg",
+    "description": "Соус ореховый - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572680-joue8upap",
+    "name": "Соус песто",
+    "category": "Соусы",
+    "price": 49,
+    "image": "assets/products/1759927572674-82k81ta67.jpg",
+    "description": "Соус песто - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572689-80qibhfo9",
+    "name": "Соус сырный",
+    "category": "Соусы",
+    "price": 69,
+    "image": "assets/products/1759927572685-h8tq9axfr.jpg",
+    "description": "Соус сырный - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572692-1gz7e946z",
+    "name": "Соус тартар",
+    "category": "Соусы",
+    "price": 59,
+    "image": "assets/products/1759927572691-370xbyxk0.jpg",
+    "description": "Соус тартар - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572697-lxwo095ps",
+    "name": "Соус терияки",
+    "category": "Соусы",
+    "price": 49,
+    "image": "assets/products/1759927572694-vczzkym8l.jpg",
+    "description": "Соус терияки - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572703-wk0880t91",
+    "name": "Соус Унаги",
+    "category": "Соусы",
+    "price": 59,
+    "image": "assets/products/1759927572698-mr1nghpji.jpg",
+    "description": "Соус Унаги - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572707-gc1g50dku",
+    "name": "Соус цезарь",
+    "category": "Салаты",
+    "price": 279,
+    "image": "assets/products/1759927572704-r35x4aug2.jpg",
+    "description": "Соус цезарь - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572716-jfhxj8wdz",
+    "name": "Соус Чесночный",
+    "category": "Соусы",
+    "price": 79,
+    "image": "assets/products/1759927572710-r5qa47mw2.jpg",
+    "description": "Соус Чесночный - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572721-gk2m7rtbi",
+    "name": "Соус чили",
+    "category": "Соусы",
+    "price": 49,
+    "image": "assets/products/1759927572717-2ux9izyre.jpg",
+    "description": "Соус чили - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572727-f5vqp98xb",
+    "name": "стрипсы",
+    "category": "Закуски",
+    "price": 279,
+    "image": "assets/products/1759927572722-qemq49odx.jpeg",
+    "description": "стрипсы - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572746-z0emx3083",
+    "name": "Супер Марио",
+    "category": "Пицца",
+    "price": 599,
+    "image": "assets/products/1759927572734-s1ogwx00n.jpg",
+    "description": "Супер Марио - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572757-d79xe2ah9",
+    "name": "Сырные палочки с брусничным соусом",
+    "category": "Соусы",
+    "price": 49,
+    "image": "assets/products/1759927572753-bp0tt4csl.jpeg",
+    "description": "Сырные палочки с брусничным соусом - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572786-zb9ssk0uk",
+    "name": "Сэлмон дрим",
+    "category": "Роллы",
+    "price": 299,
+    "image": "assets/products/1759927572759-hv7702kbh.jpeg",
+    "description": "Сэлмон дрим - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "280г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572792-ull5w5hn8",
+    "name": "сяке",
+    "category": "Роллы",
+    "price": 359,
+    "image": "assets/products/1759927572788-kuap0vnsd.jpg",
+    "description": "сяке - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "280г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572800-24n55iqht",
+    "name": "тем пура с тунцом и чукой",
+    "category": "Пицца",
+    "price": 689,
+    "image": "assets/products/1759927572794-ujqd61qzz.jpeg",
+    "description": "тем пура с тунцом и чукой - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572810-m4yfkyivu",
+    "name": "темпура с угрем",
+    "category": "Роллы",
+    "price": 399,
+    "image": "assets/products/1759927572807-6zozugce6.jpeg",
+    "description": "темпура с угрем - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "280г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572885-kj8f74tp4",
+    "name": "Терияки",
+    "category": "Пицца",
+    "price": 809,
+    "image": "assets/products/1759927572848-t2siz3skk.jpg",
+    "description": "Терияки - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572896-jykufvrcs",
+    "name": "тесто",
+    "category": "Другое",
+    "price": 339,
+    "image": "assets/products/1759927572892-1164dta22.jpg",
+    "description": "тесто - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572898-oe8fjssyz",
+    "name": "Том ям с курицей",
+    "category": "Супы",
+    "price": 469,
+    "image": "assets/products/1759927572897-unf5xq5o2.jpeg",
+    "description": "Том ям с курицей - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572908-x94lwtbbz",
+    "name": "Том ям с морепродуктами",
+    "category": "Супы",
+    "price": 399,
+    "image": "assets/products/1759927572904-79pe86551.jpeg",
+    "description": "Том ям с морепродуктами - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572915-7hiqfkxkp",
+    "name": "Томатный соус для пиццы классический",
+    "category": "Соусы",
+    "price": 69,
+    "image": "assets/products/1759927572910-317dru7z4.jpg",
+    "description": "Томатный соус для пиццы классический - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572920-b25qkua89",
+    "name": "Трюфельный соус",
+    "category": "Соусы",
+    "price": 59,
+    "image": "assets/products/1759927572916-996g4wowg.jpg",
+    "description": "Трюфельный соус - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572934-tktt756kg",
+    "name": "унаги",
+    "category": "Роллы",
+    "price": 449,
+    "image": "assets/products/1759927572928-t09t270vw.jpg",
+    "description": "унаги - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "280г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572940-x3q1licaw",
+    "name": "Фантастика",
+    "category": "Пицца",
+    "price": 459,
+    "image": "assets/products/1759927572936-dqbwejc5t.jpg",
+    "description": "Фантастика - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572973-5op5ruzy2",
+    "name": "фелармония сет",
+    "category": "Сеты",
+    "price": 1049,
+    "image": "assets/products/1759927572941-vxak606bs.jpeg",
+    "description": "фелармония сет - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572976-biqz6qswf",
+    "name": "Флорентини биф",
+    "category": "Пицца",
+    "price": 609,
+    "image": "assets/products/1759927572974-ri7mzm5e3.jpg",
+    "description": "Флорентини биф - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927572981-3t8bn3cql",
+    "name": "Фокачча Бониссимо",
+    "category": "Пицца",
+    "price": 849,
+    "image": "assets/products/1759927572976-hl32abuln.jpg",
+    "description": "Фокачча Бониссимо - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927573005-cc4kx5gz1",
+    "name": "Халяль",
+    "category": "Пицца",
+    "price": 609,
+    "image": "assets/products/1759927573001-465ta61hm.jpg",
+    "description": "Халяль - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927573035-vz96sw3tz",
+    "name": "Хантер",
+    "category": "Пицца",
+    "price": 499,
+    "image": "assets/products/1759927573031-cdjibqaz8.jpg",
+    "description": "Хантер - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927573253-990zqvk76",
+    "name": "цезарь с криветкой",
+    "category": "Салаты",
+    "price": 369,
+    "image": "assets/products/1759927573237-lzjaoqy1j.jpeg",
+    "description": "цезарь с криветкой - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927573301-ypxj6o1za",
+    "name": "цезарь с курицей",
+    "category": "Салаты",
+    "price": 389,
+    "image": "assets/products/1759927573298-2ykj0b5hb.jpeg",
+    "description": "цезарь с курицей - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927573316-yaxqcyjpb",
+    "name": "цезарь с лососем",
+    "category": "Салаты",
+    "price": 369,
+    "image": "assets/products/1759927573314-eos0qu72x.jpeg",
+    "description": "цезарь с лососем - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927573322-6mcz06qkv",
+    "name": "Цезарь с лососем",
+    "category": "Салаты",
+    "price": 279,
+    "image": "assets/products/1759927573321-qmw8vvce4.jpg",
+    "description": "Цезарь с лососем - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927573370-blu5cxa20",
+    "name": "Цезарь сет",
+    "category": "Сеты",
+    "price": 1419,
+    "image": "assets/products/1759927573326-mtcaol1tz.jpeg",
+    "description": "Цезарь сет - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "",
+    "available": true
+  },
+  {
+    "id": "prod-1759927573380-kgn3k34u5",
+    "name": "Челентано",
+    "category": "Пицца",
+    "price": 869,
+    "image": "assets/products/1759927573378-mw91ve62g.jpg",
+    "description": "Челентано - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927573394-ubmj3elr0",
+    "name": "Четриоло Карне",
+    "category": "Пицца",
+    "price": 599,
+    "image": "assets/products/1759927573392-0pzdv5rcy.jpg",
+    "description": "Четриоло Карне - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927573407-4g4ap04sf",
+    "name": "Четыре сыра",
+    "category": "Пицца",
+    "price": 859,
+    "image": "assets/products/1759927573405-g04lqpz9x.jpg",
+    "description": "Четыре сыра - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927573413-jtvcafpb5",
+    "name": "Чикен барбекю",
+    "category": "Пицца",
+    "price": 849,
+    "image": "assets/products/1759927573412-gvt6rqsgf.jpg",
+    "description": "Чикен барбекю - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "550г",
+    "available": true
+  },
+  {
+    "id": "prod-1759927573422-qyt5nf7b9",
+    "name": "эби",
+    "category": "Роллы",
+    "price": 299,
+    "image": "assets/products/1759927573419-mnpnp9j4z.jpg",
+    "description": "эби - вкусный и свежий продукт от DANDY Pizza",
+    "weight": "280г",
+    "available": true
+  }
+]

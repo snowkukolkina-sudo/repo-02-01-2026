@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Работа в Дэнди ‒ вакансии</title>
+  <!-- Custom navigation bar styles and font -->
+  <link rel="stylesheet" href="nav-menu/nav-styles.css" />
+    <!-- Replaced external font script with Google Fonts to avoid CORS issues -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* Hide the original category navigation bar */
+    nav.category-bar {
+      display: none !important;
+    }
+  </style>
+  <!--
+    Эта страница создана специально для раздела «Работа в Дэнди».  
+    В отличие от основной страницы, здесь отсутствует верхняя шапка и
+    навигация сайта. Мы оставили только плавающий горизонтальный блок
+    с кнопками для перехода между разделами страницы и фильтрации
+    вакансий.  Всплывающее окно для ввода номера телефона появляется
+    спустя период бездействия. Все стили определены в документе для
+    обеспечения единого визуального стиля с остальными страницами.
+  -->
+  <style>
+    /* Цветовая палитра и переменные — синхронизированы с основным сайтом */
+    :root {
+      --dandy-green:#04746c;
+      --dandy-yellow:#e4bc6c;
+      --text-on-green:#F3EADB;
+      --link-accent:#f5d27a;
+      --primary:#08615b;
+      --secondary:#00706c;
+      --accent:#eebc5c;
+      --danger:#db3f33;
+      --card:#094a45;
+      --chip:#0b5752;
+      --chip-hover:#0e6a64;
+      --chip-border:rgba(255,255,255,.12);
+    }
+
+    /* Сброс и базовая типографика */
+    * { box-sizing:border-box; }
+    html,body { margin:0; padding:0; background:var(--primary); color:var(--text-on-green); font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,'Open Sans',sans-serif; }
+    a { color:inherit; text-decoration:none; }
+    h1, h2, h3 { margin:0; font-weight:800; }
+    h1 { font-size:48px; line-height:1.1; }
+    h2 { font-size:32px; margin-top:40px; }
+    p { margin:12px 0; line-height:1.5; }
+
+    /* ---------------------------
+       Стилизованная шапка сайта
+       Здесь находится верхняя строка меню с
+       навигацией (Прямой эфир, Работа в Дэнди, О нас, ...)
+       и строка с логотипом, адресом и поиском.  
+       Шапка скрывается при прокрутке страницы вниз,
+       как на главной странице.  
+    --------------------------- */
+    header.header {
+      position:sticky;
+      top:0;
+      width:100%;
+      z-index:999;
+      background:var(--primary);
+      transition:transform .3s;
+    }
+    header.header--hidden {
+      /* Сдвигаем шапку чуть дальше, чтобы убрать остаточный текст (логотип) при скрытии */
+      transform:translateY(-150%);
+    }
+    /* Верхняя навигация */
+    .topnav {
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      gap:20px;
+      padding:6px 8px;
+      font-size:14px;
+      background:var(--primary);
+      border-bottom:1px solid var(--chip-border);
+    }
+    .topnav a {
+      color:var(--text-on-green);
+      padding:6px 12px;
+      border-radius:16px;
+      transition:background .2s;
+    }
+    .topnav a:hover {
+      background:var(--chip);
+      color:var(--text-on-green);
+    }
+    /* Brand line: логотип и контактные данные */
+    .brandline { padding-bottom: 2px; padding-top: 2px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:16px;
+      padding: 2px 18px;
+      background:var(--secondary);
+      border-bottom:1px solid var(--chip-border);
+      flex-wrap:wrap;
+    }
+    .brand-left {
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .brand-left img.brand-logo {
+      height:58px;
+    }
+    .brand-left .place {
+      display:flex;
+      align-items:center;
+      gap:4px;
+      font-size:14px;
+    }
+    .brand-left .place .pin {
+      font-size:16px;
+    }
+    .brand-right {
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .brand-right a.phone {
+      color:var(--dandy-yellow);
+      font-weight:700;
+      text-decoration:none;
+    }
+    .brand-right input#searchBox {
+      padding:6px 10px;
+      border-radius:8px;
+      border:none;
+      background:var(--card);
+      color:var(--text-on-green);
+      min-width:150px;
+    }
+    .profile-btn {
+      border:none;
+      background:transparent;
+      color:var(--text-on-green);
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+    }
+    .profile-btn svg {
+      fill:currentColor;
+      width:24px;
+      height:24px;
+    }
+
+    /* Горизонтальный навигационный бар — плавающий чип-бар */
+    nav.category-bar {
+      position:sticky;
+      top:0;
+      z-index:999;
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:center;
+      padding:6px 8px;
+      background:var(--dandy-green);
+      box-shadow:0 4px 12px rgba(0,0,0,.25);
+    }
+    nav.category-bar .chip {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      margin:4px;
+      padding:8px 16px;
+      border-radius:32px;
+      background:var(--chip);
+      border:1px solid var(--chip-border);
+      color:var(--text-on-green);
+      font-size:15px;
+      cursor:pointer;
+      transition:background .2s;
+    }
+    nav.category-bar .chip:hover,
+    nav.category-bar .chip.active {
+      background:var(--chip-hover);
+    }
+
+    /* Горизонтальные плажки с группами меню (категории основного меню) */
+    nav.menu-chips {
+      /* Вторая навигационная строка (категории из основного меню) */
+      display:flex;
+      overflow-x:auto;
+      gap:6px;
+      padding:8px 16px;
+      background:var(--secondary);
+      border-bottom:1px solid var(--chip-border);
+      white-space:nowrap;
+      /* Закрепляем бар к верхней части окна. Когда шапка скрывается, чипы прилипают к верху */
+      position:sticky;
+      top:0;
+      z-index:998;
+    }
+    nav.menu-chips .chip {
+      padding:8px 14px;
+      border-radius:32px;
+      background:var(--chip);
+      border:1px solid var(--chip-border);
+      color:var(--text-on-green);
+      font-size:14px;
+      cursor:default;
+      flex-shrink:0;
+      white-space:nowrap;
+    }
+    nav.menu-chips .chip.active {
+      background:var(--chip-hover);
+    }
+    nav.menu-chips .chip .letter {
+      font-weight:900;
+      margin-right:2px;
+    }
+
+    /* Общие отступы для секций */
+    section { padding:48px 16px; max-width:1200px; margin:0 auto; }
+
+    /* Герой секции */
+    .hero {
+      position:relative;
+      overflow:hidden;
+      padding:80px 16px 60px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      text-align:center;
+    }
+    .hero img {
+      width:100%;
+      height:380px;
+      object-fit:cover;
+      border-radius:16px;
+      filter:brightness(80%);
+    }
+    .hero .overlay {
+      position:absolute;
+      top:0; left:0; right:0; bottom:0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      padding:0 16px;
+    }
+    .hero h1 {
+      font-size:42px;
+      margin-bottom:16px;
+      color:var(--text-on-green);
+      text-shadow:0 2px 4px rgba(0,0,0,.6);
+    }
+    .hero .subtitle {
+      font-size:20px;
+      margin-bottom:32px;
+      max-width:640px;
+    }
+    .hero .cta-form {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      justify-content:center;
+    }
+    .hero .cta-form input[type="tel"] {
+      padding:14px 20px;
+      font-size:16px;
+      border-radius:999px;
+      border:none;
+      width:220px;
+    }
+    .hero .cta-form button {
+      padding:14px 28px;
+      border:none;
+      border-radius:999px;
+      background:var(--dandy-yellow);
+      color:var(--primary);
+      font-weight:700;
+      font-size:16px;
+      cursor:pointer;
+      transition:background .2s;
+    }
+    .hero .cta-form button:hover {
+      background:var(--accent);
+    }
+    .hero .note {
+      margin-top:16px;
+      font-size:14px;
+      opacity:.8;
+    }
+
+    /* Раздел преимуществ */
+    .benefits-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+      gap:24px;
+      margin-top:32px;
+    }
+    .benefit-item {
+      background:var(--card);
+      border-radius:12px;
+      padding:20px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      transition:transform .2s;
+    }
+    .benefit-item:hover { transform:translateY(-3px); }
+    .benefit-item h3 {
+      font-size:20px;
+      margin-bottom:8px;
+      color:var(--link-accent);
+    }
+    .benefit-item p {
+      font-size:15px;
+      line-height:1.45;
+      color:var(--text-on-green);
+    }
+
+    /* Форма заявки */
+    .application-section {
+      margin-top:48px;
+      background:var(--secondary);
+      border-radius:16px;
+      padding:32px 24px;
+    }
+    .application-section h2 {
+      margin-bottom:24px;
+    }
+    .app-form {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:16px;
+    }
+    .app-form select,
+    .app-form input[type="text"],
+    .app-form input[type="tel"],
+    .app-form input[type="date"] {
+      padding:12px;
+      font-size:15px;
+      border-radius:8px;
+      border:none;
+    }
+    .app-form label {
+      grid-column:1/-1;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:14px;
+    }
+    .app-form .error {
+      grid-column:1/-1;
+      color:var(--danger);
+      font-size:14px;
+      display:none;
+    }
+    .app-form button {
+      grid-column:1/-1;
+      padding:14px;
+      background:var(--dandy-yellow);
+      color:var(--primary);
+      font-size:16px;
+      font-weight:700;
+      border-radius:999px;
+      border:none;
+      cursor:pointer;
+      transition:background .2s;
+    }
+    .app-form button:hover { background:var(--accent); }
+
+    /* Секция калькулятора зарплаты */
+    .salary-calculator {
+      margin-top:48px;
+      background:var(--secondary);
+      border-radius:16px;
+      padding:32px 24px;
+    }
+    .salary-calculator h2 { margin-bottom:24px; }
+    .salary-calculator .controls {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:16px;
+      margin-bottom:24px;
+    }
+    .salary-calculator input[type="range"] {
+      width:100%;
+    }
+    .salary-result {
+      font-size:32px;
+      font-weight:900;
+    }
+
+    /* Секция карточек вакансий */
+    .jobs-section {
+      margin-top:48px;
+    }
+    .filter-bar {
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-bottom:24px;
+    }
+    .filter-bar select {
+      padding:10px 14px;
+      font-size:15px;
+      border-radius:8px;
+      border:none;
+    }
+    .jobs-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+      gap:24px;
+    }
+    .job-card {
+      background:var(--card);
+      border-radius:16px;
+      padding:24px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      position:relative;
+    }
+    .job-card .job-icon {
+      font-size:40px;
+    }
+    .job-card h3 {
+      font-size:20px;
+      margin:0;
+      color:var(--link-accent);
+    }
+    .job-card ul {
+      margin:0;
+      padding-left:20px;
+      font-size:14px;
+      line-height:1.4;
+      list-style:disc;
+    }
+    .job-card .apply-btn {
+      margin-top:auto;
+      align-self:flex-start;
+      padding:10px 20px;
+      border:none;
+      border-radius:999px;
+      background:var(--dandy-yellow);
+      color:var(--primary);
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+      transition:background .2s;
+    }
+    .job-card .apply-btn:hover { background:var(--accent); }
+
+    /* Поп‑ап для ввода телефона при бездействии */
+    .popup-overlay {
+      position:fixed;
+      top:0; left:0; right:0; bottom:0;
+      background:rgba(0,0,0,.7);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:10000;
+      display:none;
+    }
+    .popup {
+      background:#fff;
+      color:#000;
+      border-radius:16px;
+      padding:32px 24px;
+      width:90%;
+      max-width:420px;
+      text-align:center;
+      position:relative;
+    }
+    .popup h3 { margin-top:0; font-size:24px; }
+    .popup p { color:#333; font-size:16px; }
+    .popup input[type="tel"] {
+      width:100%;
+      padding:12px;
+      margin-top:16px;
+      border-radius:8px;
+      border:1px solid #ccc;
+      font-size:16px;
+    }
+    .popup button {
+      margin-top:20px;
+      padding:12px 24px;
+      border:none;
+      border-radius:999px;
+      background:var(--dandy-green);
+      color:var(--text-on-green);
+      font-size:16px;
+      cursor:pointer;
+    }
+    .popup .close {
+      position:absolute;
+      top:12px;
+      right:12px;
+      font-size:24px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 600px) {
+      .hero h1 { font-size:32px; }
+      .hero .subtitle { font-size:16px; }
+    }
+  /* Updated nav styles: base, hover/focus, active and click animations */
+.topnav a {
+  display: inline-block;
+  color: var(--text-on-green);
+  font-weight: 600;
+  text-transform: none;
+  white-space: nowrap;
+  text-decoration: none;
+  position: relative;
+  transition: color .15s, font-weight .15s, text-transform .15s;
+}
+.topnav a:hover,
+.topnav a:focus {
+  color: #fff;
+  font-weight: 800;
+  text-transform: uppercase;
+  outline: none;
+}
+.topnav a.is-active {
+  color: #fff;
+  font-weight: 800;
+  text-transform: uppercase;
+  border-bottom: 2px dashed rgba(255,255,255,.35);
+}
+.topnav a:focus-visible {
+  outline: 2px dashed #fff;
+  outline-offset: 2px;
+}
+.topnav a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 2px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .14s cubic-bezier(.2,.8,.2,1);
+}
+.topnav a:active::after {
+  transform: scaleX(1);
+}
+.topnav a:active {
+  transform: scale(0.98);
+}
+@media (prefers-reduced-motion: reduce) {
+  .topnav a,
+  .topnav a::after {
+    transition: none;
+  }
+}
+
+    /*
+      ---------------------------------------------------------------------
+      Override styles for the “Работа в Дэнди” page header.  The original
+      layout for this page used a simplified header that did not match the
+      design of the other internal pages.  The following rules override
+      earlier definitions to align the header’s appearance with the rest of
+      the site.  They are placed after the main definitions so they take
+      precedence in the cascade.
+    */
+    header.header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,0));
+      backdrop-filter: saturate(1.1) blur(8px);
+    }
+    .topnav {
+      display: flex;
+      gap: 14px;
+      padding: 8px 16px;
+      font-size: 14px;
+      opacity: .9;
+      flex-wrap: wrap;
+      background: none;
+      border-bottom: none;
+      justify-content: flex-start;
+    }
+    /* remove extra padding on nav links; allow hover/active styles from existing rules to apply */
+    .topnav a {
+      padding: 0;
+      border-radius: 0;
+    }
+    .brandline { padding-bottom: 2px; padding-top: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 2px 18px;
+      background: none;
+      border-bottom: none;
+      flex-wrap: wrap;
+    }
+    .brand-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .brand-block {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .brand-left img.brand-logo {
+      height: 58px;
+      width: auto;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
+    }
+    .place {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+    }
+    .brand-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .kpi-search {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .kpi {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.08);
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--chip-border);
+      font-size: 14px;
+    }
+    .kpi .star {
+      color: var(--accent);
+    }
+    .brand-right input#searchBox {
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background: var(--card);
+      color: var(--text-on-green);
+      min-width: 150px;
+    }
+    .profile {
+      background: none;
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      padding: 4px;
+    }
+</style>
+
+  <!-- Include shared category bar styles after the page-specific styles to override defaults -->
+  <link rel="stylesheet" href="assets/custom.css">
+</head>
+<body>
+  <!--
+    Шапка сайта
+    Содержит две строки: верхнюю навигацию с пунктами («Прямой эфир», «Работа в Дэнди», «О нас», «Контакты», «Доставка и оплата», «Карта», «Подарочные сертификаты», «Франчайзинг»)
+    и строку с логотипом, адресом, телефоном, поиском и иконкой профиля.
+    Шапка по умолчанию фиксирована сверху и плавно исчезает при прокрутке вниз, аналогично главной странице.
+  -->
+  <header class="header header--sticky" id="siteHeader">
+    <div class="topnav">
+      <a href="https://vk.com/clips/dandypizza" target="_blank" rel="noopener">Прямой эфир</a>
+      <a href="about.html">О нас</a>
+      <a href="contacts.html">Контакты</a>
+      <a href="delivery.html">Доставка и оплата</a>
+      <a href="gifts.html">Подарочные&nbsp;сертификаты</a>
+      <a href="jobs.html" class="is-active" aria-current="page">Работа&nbsp;в&nbsp;Дэнди</a>
+      <a href="franchise.html">Франчайзинг</a>
+    </div>
+    <div class="brandline">
+      <div class="brand-left">
+        <div class="brand-block">
+          <!-- Use the company logo on internal pages instead of the pink bunny.  -->
+          <img alt="ДЭНДИ пицца и суши" class="brand-logo" src="assets/brand/logo.svg"/>
+        </div>
+        <div class="place"><span class="pin">📍</span><span class="place-text">МО, село Немчиновка</span></div>
+      </div>
+      <div class="brand-right">
+        <div class="kpi-search"><div class="kpi"><span class="time">⏱ 32 мин</span><span class="rate"><span class="star">★</span> 4.8</span>
+          <a class="maps" href="#" rel="noopener" target="_blank">Отзыв и адрес</a></div>
+          <input id="searchBox" placeholder="Поиск..." style="padding:5px 10px; border-radius:8px; border:1px solid #ccc;" type="text"/>
+        </div>
+        <button aria-label="Профиль" class="profile" title="Профиль">
+          <svg fill="none" height="22" viewbox="0 0 24 24" width="22">
+            <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.6"></circle>
+            <path d="M4 20c1.8-3.2 5-5 8-5s6.2 1.8 8 5" stroke="currentColor" stroke-linecap="round" stroke-width="1.6"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <!-- Removed phone section on the jobs page. This page shows only KPI/time and search with profile icon in the header. -->
+    <script>
+    // Надёжный поиск: перескан каталога при каждом вводе (работает даже если скрипт стоит до секции "Меню")
+    (function(){
+      function buildText(el){
+        const chunks = [];
+        // видимый текст карточки
+        chunks.push((el.innerText || '').toLowerCase());
+        // имена в атрибутах onclick (openModalByName('...'), addQuick('...'))
+        el.querySelectorAll('[onclick]').forEach(n => {
+          const s = (n.getAttribute('onclick') || '').toLowerCase();
+          if (s) chunks.push(s);
+        });
+        // alt у изображений
+        el.querySelectorAll('img[alt]').forEach(img => {
+          const a = (img.getAttribute('alt') || '').toLowerCase();
+          if (a) chunks.push(a);
+        });
+        return chunks.join(' ');
+      }
+
+      function applyFilter(q){
+        const query = (q || '').trim().toLowerCase();
+        const gridCards = Array.from(document.querySelectorAll('.grid .card'));
+        const miniCards = Array.from(document.querySelectorAll('.scroller .card-mini'));
+        let shown = 0;
+
+        function toggleSet(list){
+          list.forEach(card => {
+            const txt = buildText(card);
+            const match = !query || txt.includes(query);
+            card.style.display = match ? '' : 'none';
+            if (match) shown++;
+          });
+        }
+        toggleSet(gridCards);
+        toggleSet(miniCards);
+
+        // Плашка "ничего не найдено"
+        let msg = document.getElementById('noResultsMsg');
+        if(!msg){
+          msg = document.createElement('div');
+          msg.id = 'noResultsMsg';
+          msg.style.cssText = 'padding:10px 12px;margin:8px 0;background:rgba(0,0,0,.18);color:#F3EADB;border:1px solid rgba(255,255,255,.15);border-radius:10px;display:none;font-size:14px';
+          msg.textContent = 'Ничего не найдено';
+          const ks = document.querySelector('.kpi-search');
+          if (ks && ks.parentNode) ks.parentNode.insertBefore(msg, ks.nextSibling);
+        }
+        msg.style.display = (query && shown === 0) ? '' : 'none';
+      }
+
+      function init(){
+        const input = document.getElementById('searchBox');
+        if(!input) return;
+        let t=null;
+        input.addEventListener('input', ()=>{ clearTimeout(t); t = setTimeout(()=>applyFilter(input.value), 50); });
+        input.addEventListener('keyup', (e)=>{ if(e.key==='Escape'){ input.value=''; applyFilter(''); } });
+        // первый прогон
+        applyFilter(input.value);
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    })();
+    </script>
+  </header>
+    <!-- New condensed navigation bar (replacing the old chip-based menu) -->
+    <nav class="tabs-wrap">
+      <ul class="tabs">
+        <li><a href="index.html" class="tab active">ВСЕ</a></li>
+        <li><a href="#" class="tab">ХИТЫ</a></li>
+        <li><a href="#" class="tab">НОВИНКИ</a></li>
+        <li><a href="#" class="tab">ВОК</a></li>
+        <li><a href="#" class="tab">ПИЦЦА</a></li>
+        <li><a href="#" class="tab">СЕТЫ</a></li>
+        <li><a href="#" class="tab">МАКИ</a></li>
+        <li><a href="#" class="tab">ЗАПЕЧЕННЫЕ</a></li>
+        <li><a href="#" class="tab">ТЕМПУРА</a></li>
+        <li><a href="#" class="tab">ГУНКАНЫ</a></li>
+        <li><a href="#" class="tab">СУШИ</a></li>
+        <li><a href="#" class="tab">ЗАКУСКИ</a></li>
+        <li><a href="#" class="tab">СЭНДВИЧИ</a></li>
+        <li><a href="#" class="tab">САЛАТЫ</a></li>
+        <li><a href="#" class="tab">СУПЫ</a></li>
+        <li><a href="#" class="tab">НАПИТКИ</a></li>
+        <li><a href="#" class="tab">СОУСЫ</a></li>
+        <li><a href="#" class="tab">ЗАВТРАКИ</a></li>
+        <li><a href="#" class="tab">БЛИНЫ</a></li>
+        <li><a href="#" class="tab">ДЕТЯМ</a></li>
+        <li><a href="#" class="tab">7 ПИЦЦА</a></li>
+        <li><a href="#" class="tab">ПИРОГИ</a></li>
+        <li><a href="#" class="tab">КОМБО</a></li>
+        <li><a href="#" class="tab">РОЛЛЫ</a></li>
+      </ul>
+      <div class="slider"></div>
+    </nav>
+
+  <!-- Горизонтальные плажки с группами меню (основные категории) -->
+  <nav class="category-bar menu-groups" style="display:none;">
+    <div class="category-scroll">
+      <!-- Полный перечень категорий, как на главной странице -->
+      <!-- Updated chip bar: use image-based chips consistent with the main site. -->
+      <a href="index.html" class="chip"><img src="assets/pink-categories/all.png" alt="Все" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/hits.png" alt="Хиты" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/newitems.png" alt="Новинки" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/wok.png" alt="Wok" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/pizza.png" alt="Пицца" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/sets.png" alt="Сеты" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/maki.png" alt="Маки" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/baked.png" alt="Запеченные" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/tempura.png" alt="Темпура" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/gunkans.png" alt="Гунканы" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/sushi.png" alt="Суши" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/snacks.png" alt="Закуски" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/sandwiches.png" alt="Сэндвичи" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/salads.png" alt="Салаты" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/soups.png" alt="Супы" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/drinks.png" alt="Напитки" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/sauces.png" alt="Соусы" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/breakfasts.png" alt="Завтраки" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/pancakes.png" alt="Блины" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/children.png" alt="Детям" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/7pizza.png" alt="7 пицца" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/pies.png" alt="Пироги" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/combo.png" alt="Комбо" onerror="this.style.display='none'" /></a>
+      <a href="index.html" class="chip"><img src="assets/pink-categories/rolls.png" alt="Роллы" onerror="this.style.display='none'" /></a>
+    </div>
+    <div class="chip-underline"><div class="thumb"></div></div>
+  </nav>
+
+  <!-- Герой секция -->
+  <section id="hero" class="hero">
+    <img src="assets/job-hero.png" alt="Работа в Дэнди"/>
+    <div class="overlay">
+      <h1>Присоединяйся к&nbsp;Дэнди и&nbsp;зарабатывай с&nbsp;нами</h1>
+      <p class="subtitle">Работа в нашей команде — это стабильный доход, гибкий график и дружная атмосфера. Мы ценим опыт и профессионализм, поэтому принимаем только совершеннолетних кандидатов (18+).</p>
+      <div class="cta-form">
+        <input type="tel" id="heroPhone" placeholder="Введите телефон"/>
+        <button id="heroSubmit">Откликнуться</button>
+      </div>
+      <div class="note">Нажимая кнопку, вы соглашаетесь на обработку персональных данных</div>
+    </div>
+  </section>
+
+  <!-- Горизонтальные плажки с группами меню будут перенесены к шапке -->
+
+  <!-- Преимущества -->
+  <section id="benefits">
+    <h2>Почему вам понравится работать в Дэнди?</h2>
+    <div class="benefits-grid">
+      <div class="benefit-item">
+        <h3>Профессиональный рост и обучение</h3>
+        <p>Программа адаптации для новых сотрудников и регулярные мастер‑классы позволяют совершенствоваться и расти до старшего повара, управляющего или даже открыть собственный филиал.</p>
+      </div>
+      <div class="benefit-item">
+        <h3>Гибкий график</h3>
+        <p>Удобные смены 2/2, 3/3 или частичная занятость. График составляется заранее, и вы можете подстроить работу под свою жизнь.</p>
+      </div>
+      <div class="benefit-item">
+        <h3>Дружный коллектив</h3>
+        <p>Молодая команда, взаимная поддержка и атмосфера, в которой каждая смена — особенная. Мы работаем как одна семья.</p>
+      </div>
+      <div class="benefit-item">
+        <h3>Бесплатное питание и скидки</h3>
+        <p>Во время смены — вкусные обеды за счёт компании, а также скидки на всю продукцию Дэнди для вас и вашей семьи.</p>
+      </div>
+      <div class="benefit-item">
+        <h3>Рядом с домом</h3>
+        <p>Шесть филиалов в разных районах: выбирайте ближайший и экономьте время на дорогу. Курьеры доставляют заказы в пределах района.</p>
+      </div>
+      <div class="benefit-item">
+        <h3>Скидки и бонусы</h3>
+        <p>Ежемесячные премии, система бонусов за отличную работу и ежегодные повышения зарплаты мотивируют развиваться.</p>
+      </div>
+      <div class="benefit-item">
+        <h3>Карьера и рост</h3>
+        <p>Реальная перспектива роста до администратора, менеджера и выше. Корпоративное обучение и поддержка наставников на каждом шаге.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Секция вакансий -->
+  <section id="jobs" class="jobs-section">
+    <h2>Кого мы ищем</h2>
+    <p>Мы отдаем приоритет кандидатам с подтверждённым опытом работы. Для администраторов предусмотрена оплачиваемая стажировка. Соискателям младше 18 лет, а также студентам без опыта, к сожалению, мы не можем предложить работу.</p>
+    <!-- Панель фильтрации -->
+    <div class="filter-bar">
+      <select id="filterPosition">
+        <option value="all">Все позиции</option>
+        <option value="pizza">Пиццемейкер</option>
+        <option value="sushi">Сушист</option>
+        <option value="courier">Курьер</option>
+        <option value="admin">Администратор</option>
+      </select>
+      <select id="filterBranch">
+        <option value="all">Все филиалы</option>
+        <option value="nemchinovka">Немчиновка</option>
+        <option value="odintsovo">Одинцово</option>
+        <option value="khimki">Химки</option>
+        <option value="krasnogorsk">Красногорск</option>
+        <option value="balashikha">Балашиха</option>
+        <option value="mytishchi">Мытищи</option>
+      </select>
+    </div>
+    <div class="jobs-grid">
+      <!-- Пиццемейкер -->
+      <div class="job-card" data-position="pizza" data-branches="nemchinovka,odintsovo,khimki,krasnogorsk,balashikha,mytishchi" id="job-pizza">
+        <div class="job-icon">🍕</div>
+        <h3>Пиццемейкер</h3>
+        <ul>
+          <li>Приготовление пиццы и закусок по технологическим картам.</li>
+          <li>Поддержание чистоты на рабочем месте, контроль веса и времени приготовления.</li>
+          <li>Работа в команде и соблюдение стандартов Дэнди.</li>
+        </ul>
+        <ul>
+          <li>График 2/2 или 3/3, полная занятость.</li>
+          <li>Ставка: от 3000 ₽ за смену, выплаты 2 раза в месяц.</li>
+          <li>Медицинская книжка обязательна, оформление за счёт компании.</li>
+          <li>Опыт работы обязателен, стажировки нет.</li>
+        </ul>
+        <button class="apply-btn" onclick="scrollToForm()">Откликнуться</button>
+      </div>
+      <!-- Сушист -->
+      <div class="job-card" data-position="sushi" data-branches="nemchinovka,khimki,balashikha,mytishchi" id="job-sushi">
+        <div class="job-icon">🍣</div>
+        <h3>Сушист</h3>
+        <ul>
+          <li>Сборка роллов, суши, воков, том ям и поке.</li>
+          <li>Приготовление заготовок, нарезка, контроль качества и свежести продуктов.</li>
+          <li>Соблюдение санитарных норм и поддержание чистоты на посту.</li>
+        </ul>
+        <ul>
+          <li>График 2/2 или 3/3, полная занятость.</li>
+          <li>Ставка: от 3500 ₽ за смену, выплаты 2 раза в месяц.</li>
+          <li>Медицинская книжка обязательна, оформляем за счёт компании.</li>
+          <li>Опыт работы обязателен, стажировки нет.</li>
+        </ul>
+        <button class="apply-btn" onclick="scrollToForm()">Откликнуться</button>
+      </div>
+      <!-- Курьер -->
+      <div class="job-card" data-position="courier" data-branches="nemchinovka,odintsovo,khimki,krasnogorsk" id="job-courier">
+        <div class="job-icon">🛵</div>
+        <h3>Курьер (на личном скутере)</h3>
+        <ul>
+          <li>Забирать заказы и доставлять их клиентам в пределах района.</li>
+          <li>Принимать оплату и поддерживать порядок в курьерской зоне.</li>
+          <li>Бережно относиться к заказам и обеспечивать быстрое обслуживание.</li>
+        </ul>
+        <ul>
+          <li>График гибкий: 2/2, 3/3 или частичная занятость.</li>
+          <li>Ставка: от 400 ₽/час + компенсация топлива, выплаты 2 раза в месяц.</li>
+          <li>Требуются водительские права и личный транспорт.</li>
+          <li>Опыт работы обязателен.</li>
+        </ul>
+        <button class="apply-btn" onclick="scrollToForm()">Откликнуться</button>
+      </div>
+      <!-- Администратор -->
+      <div class="job-card" data-position="admin" data-branches="nemchinovka,odintsovo,khimki,krasnogorsk,balashikha" id="job-admin">
+        <div class="job-icon">👩‍💼</div>
+        <h3>Администратор</h3>
+        <ul>
+          <li>Встреча гостей, выдача заказов и работа с кассой.</li>
+          <li>Организация работы зала и контроль качества сервиса.</li>
+          <li>Ведение сменной отчётности и поддержание порядка.</li>
+        </ul>
+        <ul>
+          <li>График 2/2, полная занятость.</li>
+          <li>Ставка: от 45 000 ₽ в месяц + бонусы.</li>
+          <li>Стажировка предусмотрена (2 недели), оплата 50% от ставки.</li>
+          <li>Медицинская книжка и опыт работы в общепите приветствуются.</li>
+        </ul>
+        <button class="apply-btn" onclick="scrollToForm()">Откликнуться</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Секция анкеты -->
+  <section id="apply" class="application-section">
+    <h2>Заполни небольшую анкету</h2>
+    <form class="app-form" id="applyForm" onsubmit="return handleApply(event)">
+      <select name="city" id="city" required>
+        <option value="" disabled selected>Выберите город</option>
+        <option value="nemchinovka">Немчиновка</option>
+        <option value="odintsovo">Одинцово</option>
+        <option value="khimki">Химки</option>
+        <option value="krasnogorsk">Красногорск</option>
+        <option value="balashikha">Балашиха</option>
+        <option value="mytishchi">Мытищи</option>
+      </select>
+      <select name="branch" id="branch" required>
+        <option value="" disabled selected>Адрес пиццерии</option>
+        <option value="nemchinovka">ул. Центральная, 1</option>
+        <option value="odintsovo">ул. Советская, 7</option>
+        <option value="khimki">ул. Молодежная, 12</option>
+        <option value="krasnogorsk">ул. Лесная, 3</option>
+        <option value="balashikha">ул. Новая, 15</option>
+        <option value="mytishchi">ул. Комсомольская, 8</option>
+      </select>
+      <select name="position" id="position" required>
+        <option value="" disabled selected>Кем хотите быть</option>
+        <option value="pizza">Пиццемейкер</option>
+        <option value="sushi">Сушист</option>
+        <option value="courier">Курьер</option>
+        <option value="admin">Администратор</option>
+      </select>
+      <input type="tel" name="phone" id="phone" placeholder="Телефон" required/>
+      <input type="text" name="firstName" id="firstName" placeholder="Имя" required/>
+      <input type="text" name="lastName" id="lastName" placeholder="Фамилия" required/>
+      <input type="date" name="dob" id="dob" placeholder="Дата рождения" required/>
+      <label><input type="checkbox" name="consent" id="consent" required/> Я даю согласие на обработку персональных данных</label>
+      <div class="error" id="formError">Мы принимаем на работу только лиц старше 18 лет.</div>
+      <button type="submit">Отправить анкету</button>
+    </form>
+  </section>
+
+  <!-- Секция калькулятора зарплаты -->
+  <section id="salary" class="salary-calculator">
+    <h2>Калькулятор дохода</h2>
+    <p>Выберите позицию, город и настройте количество рабочих часов и дней в месяц — мы покажем ориентировочный доход до вычета налогов.</p>
+    <div class="controls">
+      <select id="calcCity">
+        <option value="nemchinovka">Немчиновка</option>
+        <option value="odintsovo">Одинцово</option>
+        <option value="khimki">Химки</option>
+        <option value="krasnogorsk">Красногорск</option>
+        <option value="balashikha">Балашиха</option>
+        <option value="mytishchi">Мытищи</option>
+      </select>
+      <select id="calcPosition">
+        <option value="pizza">Пиццемейкер</option>
+        <option value="sushi">Сушист</option>
+        <option value="courier">Курьер</option>
+        <option value="admin">Администратор</option>
+      </select>
+      <div>
+        <label for="hoursPerDay">Рабочие часы в день: <span id="hoursValue">8</span></label>
+        <input type="range" id="hoursPerDay" min="4" max="12" value="8" step="1"/>
+      </div>
+      <div>
+        <label for="daysPerMonth">Рабочие дни в месяц: <span id="daysValue">22</span></label>
+        <input type="range" id="daysPerMonth" min="10" max="30" value="22" step="1"/>
+      </div>
+    </div>
+    <div class="salary-result" id="salaryResult">0 ₽</div>
+  </section>
+
+  <!-- Поп‑ап для телефонного номера -->
+  <div class="popup-overlay" id="phonePopup">
+    <div class="popup">
+      <div class="close" id="closePopup">×</div>
+      <h3>Оставьте свой номер телефона</h3>
+      <p>Мы свяжемся с вами и подберём лучшую позицию.</p>
+      <input type="tel" id="popupPhone" placeholder="Ваш телефон"/>
+      <button id="popupSubmit">Отправить</button>
+    </div>
+  </div>
+
+  <script>
+
+    // Фильтрация вакансий
+    const filterPosition = document.getElementById('filterPosition');
+    const filterBranch = document.getElementById('filterBranch');
+    function filterJobs() {
+      const pos = filterPosition.value;
+      const branch = filterBranch.value;
+      document.querySelectorAll('.job-card').forEach(function(card) {
+        const matchesPos = pos === 'all' || card.dataset.position === pos;
+        const branches = card.dataset.branches.split(',');
+        const matchesBranch = branch === 'all' || branches.includes(branch);
+        card.style.display = (matchesPos && matchesBranch) ? 'flex' : 'none';
+      });
+    }
+    filterPosition.addEventListener('change', filterJobs);
+    filterBranch.addEventListener('change', filterJobs);
+
+    // Прокрутка к форме из карточек
+    window.scrollToForm = function() {
+      document.getElementById('apply').scrollIntoView({ behavior: 'smooth', block:'start' });
+    }
+
+    // Проверка возраста и отправка формы
+    function handleApply(event) {
+      event.preventDefault();
+      const dob = document.getElementById('dob').value;
+      const error = document.getElementById('formError');
+      if (!dob) return false;
+      const birthDate = new Date(dob);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear() - (today.getMonth() < birthDate.getMonth() || (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate()) ? 1 : 0);
+      if (age < 18) {
+        error.style.display = 'block';
+        return false;
+      }
+      error.style.display = 'none';
+      alert('Спасибо! Ваши данные отправлены. Мы свяжемся с вами.');
+      document.getElementById('applyForm').reset();
+      return false;
+    }
+
+    // Калькулятор дохода
+    const hoursPerDay = document.getElementById('hoursPerDay');
+    const daysPerMonth = document.getElementById('daysPerMonth');
+    const hoursValue = document.getElementById('hoursValue');
+    const daysValue  = document.getElementById('daysValue');
+    const calcPosition = document.getElementById('calcPosition');
+    const salaryResult = document.getElementById('salaryResult');
+    function updateSalary() {
+      const hours = parseInt(hoursPerDay.value);
+      const days = parseInt(daysPerMonth.value);
+      hoursValue.textContent = hours;
+      daysValue.textContent  = days;
+      // базовые ставки (руб. в час) для разных позиций
+      const rates = { pizza:300, sushi:350, courier:400, admin:280 };
+      const rate = rates[calcPosition.value] || 0;
+      const salary = rate * hours * days;
+      salaryResult.textContent = salary.toLocaleString('ru-RU') + ' ₽';
+    }
+    hoursPerDay.addEventListener('input', updateSalary);
+    daysPerMonth.addEventListener('input', updateSalary);
+    calcPosition.addEventListener('change', updateSalary);
+    // Инициализируем
+    updateSalary();
+
+    // Всплывающее окно при бездействии
+    let inactivityTimeout;
+    function resetInactivityTimer() {
+      clearTimeout(inactivityTimeout);
+      inactivityTimeout = setTimeout(showPopup, 45000); // 45 секунд бездействия
+    }
+    function showPopup() {
+      document.getElementById('phonePopup').style.display = 'flex';
+    }
+    function closePopup() {
+      document.getElementById('phonePopup').style.display = 'none';
+      resetInactivityTimer();
+    }
+    document.getElementById('closePopup').addEventListener('click', closePopup);
+    document.getElementById('popupSubmit').addEventListener('click', function() {
+      const phone = document.getElementById('popupPhone').value;
+      if (phone) {
+        alert('Спасибо! Мы свяжемся с вами по указанному номеру.');
+        closePopup();
+      }
+    });
+    // Сброс таймера при взаимодействии
+    ['mousemove','keydown','scroll','click'].forEach(function(evt){
+      window.addEventListener(evt, resetInactivityTimer, { passive:true });
+    });
+    // Старт
+    resetInactivityTimer();
+
+    // ---
+    // Умное скрытие шапки при прокрутке
+    // Аналогично главной странице: шапка исчезает при скролле вниз и
+    // появляется при прокрутке вверх. Навигационный бар с категориями
+    // остаётся закреплённым.
+    (function(){
+      const header = document.getElementById('siteHeader');
+      if (!header) return;
+      let lastY = window.scrollY;
+      let hidden = false;
+      let ticking = false;
+      function update(){
+        const y = window.scrollY;
+        const dy = y - lastY;
+        const headerH = header.offsetHeight;
+        // Показываем шапку, если почти у верхней кромки
+        if (y < 8){ header.classList.remove('header--hidden'); hidden=false; lastY=y; ticking=false; return; }
+        // Если скроллим вниз и ушли ниже высоты шапки — скрываем её
+        if (dy > 4 && y > headerH){ if (!hidden){ header.classList.add('header--hidden'); hidden=true; } }
+        // Если скроллим вверх — показываем шапку
+        if (dy < -4){ if (hidden){ header.classList.remove('header--hidden'); hidden=false; } }
+        lastY = y;
+        ticking = false;
+      }
+      window.addEventListener('scroll', function(){
+        if (!ticking){ window.requestAnimationFrame(update); ticking = true; }
+      }, { passive:true });
+    })();
+
+    // --- Smart header hide like на главной странице ---
+    (function(){
+      const header = document.getElementById('siteHeader');
+      if(!header) return;
+      let lastY = window.scrollY;
+      let hidden = false;
+      let ticking = false;
+      function update(){
+        const y = window.scrollY;
+        const dh = y - lastY;
+        const headerH = header.offsetHeight;
+        // При нахождении вверху — показываем шапку
+        if (y < 8){
+          header.classList.remove('header--hidden');
+          hidden = false;
+          lastY = y;
+          ticking = false;
+          return;
+        }
+        // При прокрутке вниз и если прокрутка прошла высоту шапки — скрываем
+        if (dh > 4 && y > headerH){
+          if (!hidden){ header.classList.add('header--hidden'); hidden = true; }
+        }
+        // При прокрутке вверх — показываем
+        if (dh < -4){
+          if (hidden){ header.classList.remove('header--hidden'); hidden = false; }
+        }
+        lastY = y;
+        ticking = false;
+      }
+      window.addEventListener('scroll', function(){
+        if (!ticking){ window.requestAnimationFrame(update); ticking = true; }
+      }, { passive:true });
+    })();
+  </script>
+
+<!-- DANDY Footer Template - Start -->
+<style>
+/* Переменные цветов для футера */
+:root {
+    --gc-6: #8B4513; /* Цвет для копирайта */
+    --gc-7: #000000; /* Черный фон футера */
+}
+
+/* Анимации футера */
+.phone-bounce:hover img {
+    animation: phoneBounce 0.6s ease-in-out;
+}
+
+@keyframes phoneBounce {
+    0% {
+        transform: scale(1);
+    }
+    30% {
+        transform: scale(1.3);
+    }
+    50% {
+        transform: scale(1.15);
+    }
+    70% {
+        transform: scale(1.25);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+footer a[href*="instagram.com"]:hover,
+footer a[href*="tiktok.com"]:hover,
+footer a[href*="vk.com"]:hover,
+footer a[href*="ok.ru"]:hover,
+footer a[href*="youtube.com"]:hover,
+footer a[href*="facebook.com"]:hover,
+footer a[href*="pinterest.com"]:hover,
+footer a[href*="twitter.com"]:hover,
+footer a[href*="weibo.com"]:hover,
+footer a[href*="t.me"]:hover,
+footer a[href*="wa.me"]:hover {
+    transform: scale(1.1);
+}
+
+/* Стили для иконок внутри ссылок */
+footer a img {
+    pointer-events: none; /* Иконки не реагируют на клики, клик проходит к ссылке */
+}
+
+footer a[style*="background: #E91E63"]:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(233, 30, 99, 0.4);
+}
+
+/* Анимация при наведении на кнопку скидки */
+.discount-button:hover {
+    font-size: 18px !important;
+    transition: font-size 0.3s ease;
+}
+
+.discount-button:hover img {
+    transform: scale(1.2);
+    transition: transform 0.3s ease;
+}
+
+/* Анимация нажатия для кнопки скидки */
+.discount-button:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+}
+
+.discount-button:active img {
+    transform: scale(1.2);
+    transition: transform 0.1s ease;
+}
+
+/* Адаптивность футера */
+@media (max-width: 768px) {
+    footer > div {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    
+    footer > div > div:last-child {
+        align-items: center;
+    }
+    
+    footer > div > div:last-child > div {
+        text-align: center;
+    }
+}
+
+/* Анимация выплывания футера при прокрутке */
+.footer-animated {
+    opacity: 0;
+    transform: translateY(50px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.footer-animated.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Эффект при наведении на "Политика конфиденциальности" */
+.privacy-link:hover {
+    color: #FFB366 !important;
+    text-shadow: 0 0 8px rgba(255, 107, 53, 0.5);
+    transform: scale(1.05);
+}
+</style>
+
+<footer class="footer-animated" style="background: var(--gc-7); color: #fff; font-family: inherit; padding: 32px 16px 20px; margin-top: 40px;">
+    <div style="display: flex; gap: 24px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; max-width: 1200px; margin: 0 auto;">
+        
+        <!-- Левая колонка -->
+        <div style="min-width: 260px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <img src="assets/dandy_logo_eng.png" alt="DANDY" style="height: 32px; width: auto;" onerror="this.style.display='none'"/>
+                <div style="font-size: 12px; opacity: 0.9;">Пицца<br/>и суши</div>
+      </div>
+            <div style="font-size: 14px; opacity: 0.9;">Доставка работает<br/><span style="font-weight: 700;">ежедневно с 11:00 до 23:00.</span></div>
+    </div>
+        
+        <!-- Центральная колонка -->
+        <div style="flex: 1; min-width: 260px; text-align: center;">
+            <a href="tel:+79259347728" class="phone-bounce" style="display: inline-block; text-decoration: none; margin-bottom: 10px;"><img src="assets/telephone.png" alt="+7 925 934-77-28" style="height: 40px; width: auto;" onerror="this.style.display='none'"/></a>
+            
+            <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 8px; align-items: center;">
+                <!-- Первый ряд социальных сетей (6 иконок) -->
+                <div style="display: flex; gap: 6px; justify-content: center;">
+                    <a href="https://www.instagram.com/dandypizza.moscow/" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s ease;"><img src="social-icons/instagram.png" alt="Instagram" width="28" height="28"/></a>
+                    <a href="https://www.tiktok.com/@dandypizza.moscow" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s ease;"><img src="social-icons/tiktok.png" alt="TikTok" width="28" height="28"/></a>
+                    <a href="https://vk.com/dandypizza" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s ease;"><img src="social-icons/vk.png" alt="VK" width="28" height="28"/></a>
+                    <a href="https://ok.ru/group/70000001234567" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s ease;"><img src="social-icons/ok.png" alt="OK" width="28" height="28"/></a>
+                    <a href="https://www.youtube.com/@dandypizza" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s ease;"><img src="social-icons/youtube.png" alt="YouTube" width="28" height="28"/></a>
+                    <a href="https://www.facebook.com/dandypizza.moscow" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s ease;"><img src="social-icons/facebook.png" alt="Facebook" width="28" height="28"/></a>
+      </div>
+                <!-- Второй ряд социальных сетей (5 иконок) -->
+                <div style="display: flex; gap: 6px; justify-content: center;">
+                    <a href="https://www.pinterest.com/dandypizza" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s ease;"><img src="social-icons/pinterest.png" alt="Pinterest" width="28" height="28"/></a>
+                    <a href="https://twitter.com/dandypizza" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s ease;"><img src="social-icons/twitter.png" alt="Twitter" width="28" height="28"/></a>
+                    <a href="https://weibo.com/dandypizza" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s ease;"><img src="social-icons/weibu.png" alt="Weibo" width="28" height="28"/></a>
+                    <a href="https://t.me/dandypizza" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s ease;"><img src="social-icons/telegram.png" alt="Telegram" width="28" height="28"/></a>
+                    <a href="https://wa.me/79259347728" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s ease;"><img src="social-icons/whatsapp.png" alt="WhatsApp" width="28" height="28"/></a>
+    </div>
+            </div>
+        </div>
+        
+        <!-- Правая колонка -->
+        <div style="min-width: 240px; display: flex; flex-direction: column; align-items: center;">
+            <a href="#" class="discount-button" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #E91E63; color: #fff; text-decoration: none; padding: 16px 24px; border-radius: 30px; font-weight: 700; font-size: 16px; transition: all 0.3s ease; margin-bottom: 12px; box-shadow: 0 4px 15px rgba(233, 30, 99, 0.3); text-align: center; min-width: 200px;">
+                Получи скидку <img src="assets/10%.png" alt="10%" style="height: 24px; width: auto; margin-left: 4px;"/>
+            </a>
+            <div style="font-size: 12px; opacity: 0.9; text-align: center; max-width: 200px; line-height: 1.4;">
+                на следующий заказ, подпишись на наши соц сети....
+    </div>
+  </div>
+    </div>
+    
+    <!-- Нижняя часть футера -->
+    <div style="max-width: 1200px; margin: 16px auto 0; padding-top: 14px; display: flex; justify-content: space-between; align-items: center; gap: 16px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 12px; opacity: 0.85;">
+        <a href="#" class="privacy-link" style="color: #FF6B35; text-decoration: none; font-weight: 600; font-size: 14px; transition: all 0.3s ease;">Политика конфиденциальности</a>
+        <div style="color: #fff;">© 2024 Москва, «Дэнди»</div>
+  </div>
+</footer>
+<!-- DANDY Footer Template - End -->
+
+<script>
+// Анимация футера при прокрутке
+document.addEventListener('DOMContentLoaded', function() {
+    const footer = document.querySelector('.footer-animated');
+    
+    if (footer) {
+        // Функция для проверки видимости футера
+        function checkFooterVisibility() {
+            // Футер появляется только после прокрутки минимум на 500px
+            // И только если пользователь прокрутил минимум 30% от высоты документа
+            const scrolled = window.scrollY;
+            const documentHeight = document.documentElement.scrollHeight;
+            const windowHeight = window.innerHeight;
+            const scrollPercent = (scrolled / (documentHeight - windowHeight)) * 100;
+            
+            if (scrolled > 500 && scrollPercent > 30) {
+                footer.classList.add('visible');
+                // Убираем обработчик после первого показа
+                window.removeEventListener('scroll', checkFooterVisibility);
+            }
+        }
+        
+        // Добавляем обработчик скролла
+        window.addEventListener('scroll', checkFooterVisibility);
+    }
+});
+</script>
+
+<!-- Enable yellow runner and normalize chips for category bar on this page -->
+<script src="assets/chip-slider.js"></script>
+    <script src="nav-menu/nav-script.js"></script>
+  </body>
+</html>

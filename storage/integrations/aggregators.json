@@ -1,0 +1,43 @@
+{
+    "aggregators": {
+        "yandex_eda": {
+            "id": "yandex_eda",
+            "name": "Яндекс.Еда",
+            "description": "Приём заказов и синхронизация меню с платформой Яндекс.Еда",
+            "enabled": false,
+            "restaurant_id": "",
+            "api_key": "",
+            "webhook_url": "",
+            "menu_last_sync": null,
+            "orders_today": 0,
+            "revenue_today": 0,
+            "status": "not_configured"
+        },
+        "delivery_club": {
+            "id": "delivery_club",
+            "name": "Delivery Club",
+            "description": "Подключение ресторана к Delivery Club и обмен заказами",
+            "enabled": false,
+            "restaurant_id": "",
+            "api_key": "",
+            "webhook_url": "",
+            "menu_last_sync": null,
+            "orders_today": 0,
+            "revenue_today": 0,
+            "status": "not_configured"
+        },
+        "vkusvill": {
+            "id": "vkusvill",
+            "name": "ВкусВилл",
+            "description": "Заказы в сервисе ВкусВилл и онлайн-витрина",
+            "enabled": false,
+            "restaurant_id": "",
+            "api_key": "",
+            "webhook_url": "",
+            "menu_last_sync": null,
+            "orders_today": 0,
+            "revenue_today": 0,
+            "status": "not_configured"
+        }
+    }
+}

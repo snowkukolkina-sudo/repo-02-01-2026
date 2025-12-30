@@ -1,0 +1,8 @@
+.env
+node_modules/
+logs/
+*.log
+dist/
+.DS_Store
+300125.zip
+

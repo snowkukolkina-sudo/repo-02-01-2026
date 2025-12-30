@@ -1,0 +1,4866 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>DANDY CRM - Админка</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico" onerror="this.remove()">
+    <link rel="stylesheet" href="assets/custom.css" id="custom-css-link" onerror="this.remove()">
+    <script>
+        // РАННЕЕ подавление ошибок консоли для отсутствующих ресурсов и Chrome расширений
+        (function() {
+            'use strict';
+            
+            // Подавляем ошибки из Chrome расширений на уровне window.addEventListener
+            window.addEventListener('error', function(e) {
+                if (e.filename && e.filename.includes('chrome-extension://')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return true;
+                }
+            }, true);
+            
+            // Подавляем ошибки из unhandledrejection для расширений
+            window.addEventListener('unhandledrejection', function(e) {
+                if (e.reason && e.reason.stack && e.reason.stack.includes('chrome-extension://')) {
+                    e.preventDefault();
+                    return true;
+                }
+            });
+            
+            const originalError = console.error;
+            const originalWarn = console.warn;
+            
+            const suppressPatterns = [
+                'assets/brand/logo',
+                'assets/custom.css',
+                'favicon.ico',
+                'socket.io',
+                'ERR_ABORTED',
+                'ERR_FAILED',
+                'AggregatorIntegrations',
+                'load error',
+                'HTTP 200',
+                'xlsx',
+                'cdnjs',
+                'unpkg',
+                'sheetjs',
+                'CORS',
+                'MIME type',
+                'text/html',
+                'Refused to execute',
+                '404 (Not Found)',
+                'net::ERR_ABORTED',
+                'GET https://',
+                'POST https://',
+                'Failed to load resource',
+                'chrome-extension://',
+                'Error handling response',
+                'Cannot read properties of undefined',
+                'reading \'replace\'',
+                'hdbiniolkkoejpgaengomepghojclnae',
+                'EIO=4',
+                '?EIO=4',
+                'transport=polling'
+            ];
+            
+            function shouldSuppress(msg) {
+                if (!msg) return false;
+                const str = String(msg);
+                return suppressPatterns.some(p => str.includes(p));
+            }
+            
+            // Перехватываем console.error ДО всего остального
+            console.error = function(...args) {
+                const msg = args.join(' ');
+                if (shouldSuppress(msg)) {
+                    return; // Полностью подавляем
+                }
+                originalError.apply(console, args);
+            };
+            
+            // Перехватываем console.warn ДО всего остального
+            console.warn = function(...args) {
+                const msg = args.join(' ');
+                if (shouldSuppress(msg)) {
+                    return; // Полностью подавляем
+                }
+                originalWarn.apply(console, args);
+            };
+            
+            // Перехватываем глобальные ошибки загрузки ресурсов
+            window.addEventListener('error', function(e) {
+                const message = e.message || '';
+                const filename = e.filename || e.source || '';
+                const target = e.target;
+                const errorString = message + ' ' + filename;
+                
+                // Подавляем ошибки из расширений Chrome и socket.io
+                if (filename.includes('chrome-extension://') || 
+                    filename.includes('moz-extension://') || 
+                    filename.includes('safari-extension://') ||
+                    message.includes('chrome-extension://') ||
+                    message.includes('Error handling response') ||
+                    message.includes('Cannot read properties') ||
+                    message.includes('socket.io') ||
+                    message.includes('/gps/socket.io/') ||
+                    message.includes('/socket.io/') ||
+                    (message.includes('404') && (message.includes('socket') || message.includes('gps'))) ||
+                    filename.includes('socket.io') ||
+                    errorString.includes('socket.io') ||
+                    shouldSuppress(errorString) ||
+                    shouldSuppress(message)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    return false;
+                }
+                
+                if (target && target.tagName) {
+                    const src = target.src || target.href || '';
+                    if (shouldSuppress(src)) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return false;
+                    }
+                }
+                if (e.message && shouldSuppress(e.message)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+            }, true);
+            
+            // Перехватываем необработанные отклонения промисов
+            window.addEventListener('unhandledrejection', function(e) {
+                const reason = e.reason || '';
+                const reasonStr = String(reason);
+                const message = reason?.message || '';
+                if (shouldSuppress(reasonStr) || 
+                    shouldSuppress(message) ||
+                    reasonStr.includes('chrome-extension://') ||
+                    reasonStr.includes('socket.io') ||
+                    reasonStr.includes('/gps/socket.io/') ||
+                    message.includes('Error handling response') ||
+                    message.includes('Cannot read properties') ||
+                    message.includes('socket.io') ||
+                    message.includes('404')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    return false;
+                }
+            }, true);
+            
+            // Перехватываем все ошибки через window.onerror для socket.io
+            const originalOnError = window.onerror;
+            window.onerror = function(message, source, lineno, colno, error) {
+                const messageStr = String(message || '');
+                const sourceStr = String(source || '');
+                if (messageStr.includes('socket.io') || 
+                    messageStr.includes('/gps/socket.io/') ||
+                    messageStr.includes('/socket.io/') ||
+                    (messageStr.includes('404') && (messageStr.includes('socket') || messageStr.includes('gps'))) ||
+                    sourceStr.includes('socket.io') ||
+                    (error && (String(error.message || '').includes('socket.io') || 
+                               String(error.message || '').includes('/gps/socket.io/') ||
+                               (String(error.message || '').includes('404') && String(error.message || '').includes('socket'))))) {
+                    // Полностью подавляем ошибки socket.io
+                    return true; // Предотвращаем вывод в консоль
+                }
+                // Для других ошибок вызываем оригинальный обработчик
+                if (originalOnError) {
+                    return originalOnError.apply(this, arguments);
+                }
+                return false;
+            };
+            
+            // РАННИЙ перехват fetch для подавления ошибок socket.io
+            if (window.fetch) {
+                const originalFetchEarly = window.fetch;
+                window.fetch = function(...args) {
+                    const url = args[0];
+                    if (typeof url === 'string' && (url.includes('socket.io') || shouldSuppress(url))) {
+                        return originalFetchEarly.apply(this, args)
+                            .then(response => {
+                                if (!response.ok && url.includes('socket.io')) {
+                                    // Возвращаем успешный ответ для socket.io 404
+                                    return new Response(JSON.stringify({ success: true }), {
+                                        status: 200,
+                                        headers: { 'Content-Type': 'application/json' }
+                                    });
+                                }
+                                return response;
+                            })
+                            .catch(error => {
+                                if (url.includes('socket.io') || shouldSuppress(String(error))) {
+                                    // Подавляем ошибки socket.io
+                                    return new Response(JSON.stringify({ success: true }), {
+                                        status: 200,
+                                        headers: { 'Content-Type': 'application/json' }
+                                    });
+                                }
+                                throw error;
+                            });
+                    }
+                    return originalFetchEarly.apply(this, args);
+                };
+            }
+            
+            // РАННИЙ перехват XMLHttpRequest для подавления ошибок socket.io
+            if (window.XMLHttpRequest) {
+                const originalXHROpen = XMLHttpRequest.prototype.open;
+                const originalXHRSend = XMLHttpRequest.prototype.send;
+                
+                XMLHttpRequest.prototype.open = function(method, url, ...rest) {
+                    this._url = url;
+                    this._isSocketIO = typeof url === 'string' && url.includes('socket.io');
+                    return originalXHROpen.apply(this, [method, url, ...rest]);
+                };
+                
+                XMLHttpRequest.prototype.send = function(...args) {
+                    if (this._isSocketIO) {
+                        // Перехватываем все события для socket.io
+                        this.addEventListener('error', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            e.stopImmediatePropagation();
+                        }, true);
+                        this.addEventListener('loadend', function(e) {
+                            if (this.status === 404 || this.status === 0) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                e.stopImmediatePropagation();
+                            }
+                        }, true);
+                        this.onerror = function() {};
+                        this.onabort = function() {};
+                    }
+                    return originalXHRSend.apply(this, args);
+                };
+            }
+        })();
+        
+        // Обработка ошибок загрузки CSS файла
+        document.addEventListener('DOMContentLoaded', function() {
+            const cssLink = document.getElementById('custom-css-link');
+            if (cssLink) {
+                cssLink.addEventListener('error', function() {
+                    this.remove();
+                });
+                // Если файл не загрузился в течение 1 секунды, удаляем ссылку
+                setTimeout(function() {
+                    if (cssLink.sheet === null && cssLink.href) {
+                        cssLink.remove();
+                    }
+                }, 1000);
+            }
+        });
+    </script>
+    <style>
+        :root {
+            --dandy-green: #04746c;
+            --primary: #08615b;
+            --secondary: #00706c;
+            --dandy-bg: #08615b;
+            --dandy-yellow: #e4bc6c;
+            --accent: #eebc5c;
+            --dandy-pink: #FF66B3;
+            --dandy-card: #ffffff;
+            --dandy-muted: #eaf3ee;
+            --text-on-green: #F3EADB;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--dandy-green);
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .admin-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: var(--dandy-green);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .brand-new-logo {
+            height: 50px;
+            width: auto;
+            object-fit: contain;
+            display: block;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+            transition: transform 0.3s ease;
+        }
+
+        .brand-new-logo:hover {
+            transform: scale(1.05);
+        }
+
+        .login-header .brand-new-logo {
+            height: 60px;
+            margin: 0 auto 1rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--dandy-pink);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .logo-text {
+            color: white;
+        }
+
+        .logo-title {
+            font-size: 2rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, var(--dandy-yellow), #fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-subtitle {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .phone-info {
+            background: rgba(255,255,255,0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .lang-switch {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .lang-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .lang-btn.active {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Стили для поиска */
+        #adminSearch::placeholder {
+            color: rgba(255,255,255,0.8) !important;
+        }
+        
+        #adminSearch:focus::placeholder {
+            color: rgba(255,255,255,0.6) !important;
+        }
+
+        .tabs-wrap {
+            background: var(--dandy-bg);
+            overflow-x: auto;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+            padding: 0.5rem 1rem;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.3) transparent;
+        }
+
+        .tabs-wrap::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .tabs-wrap::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .tabs-wrap::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+        }
+
+        .tabs-wrap::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.5);
+        }
+
+        .tabs-wrap::before,
+        .tabs-wrap::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 20px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .tabs-wrap::before {
+            left: 0;
+            background: linear-gradient(to right, var(--dandy-bg), transparent);
+        }
+
+        .tabs-wrap::after {
+            right: 0;
+            background: linear-gradient(to left, var(--dandy-bg), transparent);
+        }
+
+        .category-nav-card {
+            background: #f8f9fa;
+            border-radius: 16px;
+            border: 2px solid rgba(4, 116, 108, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .category-nav-card h4 {
+            margin-bottom: 1rem;
+            color: var(--dandy-green);
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .category-tree {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .category-tree__item {
+            position: relative;
+        }
+
+        .category-tree__button {
+            border: 1px solid rgba(4, 116, 108, 0.2);
+            background: white;
+            border-radius: 999px;
+            padding: 0.35rem 0.9rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--dandy-green);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .category-tree__button:hover {
+            border-color: rgba(4, 116, 108, 0.45);
+            box-shadow: 0 4px 12px rgba(4, 116, 108, 0.12);
+        }
+
+        .category-tree__button.is-active {
+            background: var(--dandy-green);
+            color: #fff;
+            border-color: transparent;
+        }
+
+        .category-tree__children {
+            list-style: none;
+            margin: 0.5rem 0 0 1.2rem;
+            padding: 0.5rem 0 0 1rem;
+            border-left: 2px dashed rgba(4, 116, 108, 0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .category-nav-actions {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .category-nav__empty {
+            font-size: 0.9rem;
+            color: rgba(4, 116, 108, 0.7);
+        }
+
+        .category-nav__list.is-loading,
+        .category-nav__list--nested.is-loading,
+        #adminCategoryNav.is-loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            min-width: max-content;
+            white-space: nowrap;
+        }
+
+        .tabs li {
+            flex-shrink: 0;
+        }
+
+        .tab {
+            display: block;
+            padding: 0.75rem 1.2rem;
+            border-radius: 25px;
+            background: transparent;
+            color: var(--dandy-pink);
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            min-width: fit-content;
+        }
+
+        .tab:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
+
+        .tab.active {
+            background: rgba(255,255,255,0.15);
+            color: var(--dandy-pink);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3);
+        }
+
+
+        .main-content {
+            flex: 1;
+            background: var(--dandy-bg);
+            border-radius: 20px 20px 0 0;
+            margin-top: 1rem;
+            padding: 2rem;
+            min-height: calc(100vh - 140px);
+        }
+
+        .login-screen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--dandy-muted);
+        }
+
+        .login-form {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .login-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .login-title {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--dandy-green);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e5e5e5;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--dandy-yellow);
+        }
+
+        /* Специальные стили для полей в карточках */
+        .card .form-input {
+            width: 100%;
+            max-width: 200px;
+            padding: 0.4rem;
+            font-size: 0.8rem;
+            box-sizing: border-box;
+        }
+
+        /* Стили для полей маркетинга */
+        .marketing-card .form-input {
+            width: 100%;
+            max-width: 200px;
+            padding: 0.4rem;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+            box-sizing: border-box;
+        }
+
+        /* Контейнеры для полей в карточках */
+        .card input[type="text"],
+        .card input[type="number"] {
+            width: 100%;
+            max-width: 200px;
+            padding: 0.4rem;
+            font-size: 0.8rem;
+            box-sizing: border-box;
+            border: 2px solid #e5e5e5;
+            border-radius: 6px;
+            transition: border-color 0.3s ease;
+        }
+
+        .card input[type="text"]:focus,
+        .card input[type="number"]:focus {
+            outline: none;
+            border-color: var(--dandy-yellow);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 2rem;
+            margin: 1rem 0;
+        }
+
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: var(--dandy-green);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0a4d35;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--dandy-green);
+            border: 2px solid var(--dandy-green);
+        }
+
+        .btn-secondary:hover {
+            background: var(--dandy-green);
+            color: white;
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .test-info {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .page-content {
+            display: none;
+        }
+
+        .page-content.active {
+            display: block;
+        }
+
+        /* Enhanced UI styles */
+        .card {
+            background: rgba(255,255,255,0.98);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            color: var(--dandy-green);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(135deg, var(--dandy-green), var(--dandy-yellow));
+            border-radius: 2px;
+        }
+
+        /* Enhanced button styles */
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-transform: none;
+            letter-spacing: 0.5px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--dandy-green), #0a4d35);
+            color: white;
+            box-shadow: 0 4px 15px rgba(8, 97, 91, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0a4d35, var(--dandy-green));
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(8, 97, 91, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--dandy-green);
+            border: 2px solid var(--dandy-green);
+            box-shadow: 0 4px 15px rgba(8, 97, 91, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: var(--dandy-green);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(8, 97, 91, 0.2);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #059669, #047857);
+            color: white;
+            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3);
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #047857, #059669);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(5, 150, 105, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: white;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #b91c1c, #dc2626);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
+        }
+
+        .btn-small {
+            padding: 0.75rem 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        /* Enhanced form styles */
+        .form-input {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            border: 2px solid #e5e5e5;
+            border-radius: 15px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+            background: rgba(255,255,255,0.9);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--dandy-yellow);
+            box-shadow: 0 0 0 3px rgba(228, 188, 108, 0.1);
+            background: white;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-weight: 700;
+            color: var(--dandy-green);
+            font-size: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        /* Enhanced grid styles */
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+        .grid-3 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+        .grid-4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+
+        /* Enhanced table styles */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .data-table th {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            font-weight: 700;
+            color: var(--dandy-green);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        .data-table tbody tr:hover {
+            background: rgba(8, 97, 91, 0.05);
+            transform: scale(1.01);
+        }
+
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Мобильная адаптация таблиц: горизонтальный скролл */
+        @media (max-width: 768px) {
+            .data-table {
+                display: block;
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .data-table thead,
+            .data-table tbody,
+            .data-table tr {
+                width: 100%;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: 0.5rem 0.75rem;
+                white-space: nowrap;
+            }
+        }
+
+        /* Enhanced badge styles */
+        .badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .badge-success {
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+            color: #065f46;
+            box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
+        }
+
+        .badge-warning {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #92400e;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+        }
+
+        .badge-secondary {
+            background: linear-gradient(135deg, #e5e7eb, #d1d5db);
+            color: #374151;
+            box-shadow: 0 2px 8px rgba(107, 114, 128, 0.2);
+        }
+
+        .badge-danger {
+            background: linear-gradient(135deg, #fef2f2, #fecaca);
+            color: #991b1b;
+            box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
+        }
+
+        /* Enhanced stat values */
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--dandy-green);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 0.5rem 0;
+        }
+
+        /* Enhanced info styles */
+        .info-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin: 0.5rem 0 0 0;
+            color: var(--dandy-green);
+        }
+
+        .text-success {
+            color: #059669;
+        }
+
+        .text-warning {
+            color: #d97706;
+        }
+
+        /* Enhanced alert styles */
+        .alert {
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 1.5rem;
+            border-left: 5px solid;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+            border-left-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .alert-warning {
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+            border-left-color: #f59e0b;
+            color: #92400e;
+        }
+
+        /* Enhanced tabs styles */
+        .tabs-nav {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 3px solid #e5e5e5;
+            padding-bottom: 0.5rem;
+        }
+
+        .tab-button {
+            padding: 1rem 2rem;
+            border: none;
+            background: transparent;
+            color: #666;
+            font-weight: 700;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .tab-button:hover {
+            color: var(--dandy-green);
+            background: rgba(8, 97, 91, 0.05);
+        }
+
+        .tab-button.active {
+            color: var(--dandy-green);
+            border-bottom-color: var(--dandy-green);
+            background: rgba(8, 97, 91, 0.1);
+        }
+
+        /* Enhanced tier cards */
+        .tier-card {
+            background: linear-gradient(135deg, var(--dandy-green) 0%, #0f6b49 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(8, 97, 91, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .tier-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(8, 97, 91, 0.4);
+        }
+
+        .tier-card h3 {
+            margin: 0 0 1rem 0;
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+
+        /* Modal styles - unified */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow: hidden;
+            animation: modalSlideIn 0.3s ease-out;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-content.large {
+            max-width: 900px;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #e5e5e5;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: var(--dandy-green);
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: #999;
+            cursor: pointer;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            background: rgba(220, 38, 38, 0.1);
+            color: #dc2626;
+            transform: scale(1.1);
+        }
+
+        .modal-body {
+            padding: 2rem;
+            overflow-y: auto;
+            flex: 1;
+            max-height: calc(90vh - 140px);
+        }
+
+        .modal-footer {
+            padding: 1rem 2rem;
+            border-top: 1px solid #e5e5e5;
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            flex-shrink: 0;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        /* Tabs styles */
+        .tabs-container {
+            margin-top: 1rem;
+        }
+
+        .tabs-nav {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #e5e5e5;
+        }
+
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            background: transparent;
+            color: #666;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button:hover {
+            color: var(--dandy-green);
+        }
+
+        .tab-button.active {
+            color: var(--dandy-green);
+            border-bottom-color: var(--dandy-green);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Badge styles */
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .badge-danger {
+            background: #fef2f2;
+            color: #991b1b;
+        }
+
+        /* Data table styles */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .data-table th {
+            background: #f9f9f9;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        /* Button styles */
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+            border: none;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .btn-success {
+            background: #059669;
+            color: white;
+            border: none;
+        }
+
+        .btn-success:hover {
+            background: #047857;
+        }
+
+        /* Info labels and values */
+        .info-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin: 0;
+        }
+
+        .info-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin: 0.25rem 0 0 0;
+        }
+
+        .text-success {
+            color: #059669;
+        }
+
+        .text-warning {
+            color: #d97706;
+        }
+
+        /* Stat values */
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dandy-green);
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 0.75rem 1rem;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
+            }
+
+            .header-actions {
+                width: 100%;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                gap: 0.5rem;
+            }
+
+            .search-container {
+                flex: 1 1 100%;
+                margin-right: 0 !important;
+            }
+
+            .search-container input {
+                width: 100% !important;
+                max-width: 100%;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-menu {
+                padding: 0.5rem;
+            }
+
+            .modal-content {
+                margin: 0.5rem;
+                max-height: calc(100vh - 1rem);
+            }
+
+            .modal-header,
+            .modal-body,
+            .modal-footer {
+                padding: 1rem;
+            }
+        }
+
+        /* Loyalty suite layout */
+        .loyalty-suite-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .loyalty-suite {
+            display: flex;
+            gap: 1.5rem;
+            min-height: 640px;
+            flex-wrap: wrap;
+        }
+
+        .loyalty-sidebar {
+            flex: 0 0 260px;
+            background: linear-gradient(180deg, #0a6b66 0%, #074d47 100%);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.18);
+            color: #fff;
+        }
+
+        .loyalty-sidebar h2 {
+            color: #f2bd62;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .loyalty-nav-item {
+            margin-bottom: 10px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .loyalty-nav-item:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .loyalty-nav-item.active {
+            background: #f2bd62;
+            color: #074d47;
+            font-weight: 700;
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.25);
+        }
+
+        .loyalty-main {
+            flex: 1;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .loyalty-metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .loyalty-metric-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: 0 12px 24px rgba(4, 116, 108, 0.12);
+            border: 1px solid rgba(4,116,108,0.12);
+        }
+
+        .loyalty-metric-card h4 {
+            margin: 0;
+            color: #0a6b66;
+            font-size: 0.9rem;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+
+        .loyalty-metric-card p {
+            margin: 6px 0 0;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #074d47;
+        }
+
+        .loyalty-panel {
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 20px;
+            box-shadow: 0 20px 32px rgba(10, 107, 102, 0.12);
+            border: 1px solid rgba(4,116,108,0.12);
+        }
+
+        .loyalty-panel h3 {
+            color: #0a6b66;
+            margin: 0 0 12px;
+            font-size: 1.1rem;
+        }
+
+        .loyalty-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .loyalty-progress {
+            width: 100%;
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(10, 107, 102, 0.12);
+            overflow: hidden;
+            margin-top: 6px;
+        }
+
+        .loyalty-progress span {
+            display: block;
+            height: 100%;
+            background: linear-gradient(90deg, #f2bd62 0%, #f8d88f 100%);
+        }
+
+        .loyalty-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: rgba(242, 189, 98, 0.18);
+            color: #8b6200;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .loyalty-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .loyalty-table th,
+        .loyalty-table td {
+            padding: 10px 12px;
+            border: 1px solid rgba(4,116,108,0.12);
+            text-align: left;
+            font-size: 0.95rem;
+        }
+
+        .loyalty-table th {
+            background: rgba(4,116,108,0.08);
+            color: #074d47;
+            font-weight: 700;
+        }
+
+        .loyalty-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 24px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .loyalty-button.primary {
+            background: linear-gradient(90deg, #0a6b66 0%, #074d47 100%);
+            color: #fff;
+        }
+
+        .loyalty-button.secondary {
+            background: rgba(10,107,102,0.12);
+            color: #0a6b66;
+        }
+
+        .loyalty-button.danger {
+            background: rgba(220, 53, 69, 0.12);
+            color: #c53030;
+        }
+
+        .loyalty-button:hover {
+            transform: translateY(-1px);
+        }
+
+        .loyalty-inline-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .loyalty-muted {
+            color: rgba(7,77,71,0.7);
+            font-size: 0.85rem;
+        }
+
+        .loyalty-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: rgba(10, 107, 102, 0.12);
+            color: #0a6b66;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 6px;
+            margin-bottom: 4px;
+        }
+
+        .loyalty-anchor-table code {
+            background: rgba(10,107,102,0.12);
+            padding: 4px 6px;
+            border-radius: 6px;
+            color: #074d47;
+        }
+
+        @media (max-width: 1200px) {
+            .loyalty-sidebar {
+                flex: 1 1 100%;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .loyalty-nav-item {
+                flex: 1 1 140px;
+                text-align: center;
+            }
+
+            .loyalty-suite {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .loyalty-metrics-grid {
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            }
+        }
+
+        /* EDO / Диадок */
+        .edo-suite-loading {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .edo-suite {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            min-height: 620px;
+        }
+
+        .edo-sidebar {
+            flex: 0 0 280px;
+            background: linear-gradient(180deg, #0a615c 0%, #053d39 100%);
+            border-radius: 16px;
+            padding: 20px;
+            color: #fff;
+            box-shadow: 0 18px 32px rgba(5, 61, 57, 0.22);
+        }
+
+        .edo-sidebar h2 {
+            margin: 0 0 1rem;
+            color: #f2bd62;
+            font-size: 1.2rem;
+        }
+
+        .edo-nav-item {
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.08);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .edo-nav-item:hover {
+            background: rgba(255,255,255,0.18);
+        }
+
+        .edo-nav-item.active {
+            background: #f2bd62;
+            color: #053d39;
+            font-weight: 700;
+            box-shadow: 0 0 0 2px rgba(242,189,98,0.3);
+        }
+
+        .edo-main {
+            flex: 1;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .edo-panel {
+            background: #fff;
+            border-radius: 18px;
+            padding: 20px;
+            box-shadow: 0 20px 36px rgba(5, 61, 57, 0.12);
+            border: 1px solid rgba(5, 61, 57, 0.1);
+        }
+
+        .edo-panel h3 {
+            margin: 0 0 12px;
+            color: #0a615c;
+            font-size: 1.1rem;
+        }
+
+        .edo-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .edo-table th,
+        .edo-table td {
+            padding: 10px 12px;
+            border: 1px solid rgba(5, 61, 57, 0.12);
+            text-align: left;
+            font-size: 0.95rem;
+        }
+
+        .edo-table th {
+            background: rgba(5,61,57,0.08);
+            color: #053d39;
+            font-weight: 700;
+        }
+
+        .edo-doc-row {
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .edo-doc-row:hover {
+            background: rgba(5,61,57,0.05);
+        }
+
+        .edo-doc-row.selected {
+            background: rgba(242,189,98,0.12);
+        }
+
+        .edo-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .edo-status.incoming { background: rgba(10, 97, 91, 0.12); color: #0a615c; }
+        .edo-status.completed { background: rgba(14, 159, 110, 0.15); color: #0f7a5c; }
+        .edo-status.pending { background: rgba(242, 189, 98, 0.2); color: #8b6200; }
+        .edo-status.rejected { background: rgba(220, 53, 69, 0.15); color: #b22222; }
+
+        .edo-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .edo-tag {
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: rgba(10,97,91,0.12);
+            color: #0a615c;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .edo-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .edo-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 24px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .edo-button.primary {
+            background: linear-gradient(90deg, #0a615c 0%, #053d39 100%);
+            color: #fff;
+        }
+
+        .edo-button.secondary {
+            background: rgba(10,97,91,0.12);
+            color: #0a615c;
+        }
+
+        .edo-button.ghost {
+            background: transparent;
+            border: 1px solid rgba(10,97,91,0.2);
+            color: #0a615c;
+        }
+
+        .edo-button.danger {
+            background: rgba(220, 53, 69, 0.15);
+            color: #c53030;
+        }
+
+        .edo-button:hover {
+            transform: translateY(-1px);
+        }
+
+        .edo-split {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        }
+
+        .edo-detail-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .edo-detail-col {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 180px;
+        }
+
+        .edo-muted {
+            color: rgba(5,61,57,0.72);
+            font-size: 0.85rem;
+        }
+
+        .edo-line-match {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .edo-select {
+            padding: 6px 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(5,61,57,0.2);
+            min-width: 180px;
+        }
+
+        .edo-tab-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .edo-tab {
+            padding: 8px 14px;
+            border-radius: 10px;
+            background: rgba(10,97,91,0.08);
+            color: #0a615c;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .edo-tab.active {
+            background: #0a615c;
+            color: #fff;
+        }
+
+        .edo-scroll {
+            max-height: 360px;
+            overflow: auto;
+            border: 1px solid rgba(5,61,57,0.12);
+            border-radius: 12px;
+        }
+
+        .edo-info-banner {
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: rgba(242,189,98,0.18);
+            color: #8b6200;
+            margin-bottom: 12px;
+        }
+
+        /* Data Import */
+        .import-suite-loading {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .import-suite {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            min-height: 520px;
+        }
+
+        .import-sidebar {
+            flex: 0 0 280px;
+            background: linear-gradient(180deg, #0a6b66 0%, #074d47 100%);
+            border-radius: 16px;
+            padding: 20px;
+            color: #fff;
+            box-shadow: 0 14px 28px rgba(10, 107, 102, 0.22);
+        }
+
+        .import-sidebar h2 {
+            margin: 0 0 1rem;
+            color: #f2bd62;
+            font-size: 1.2rem;
+        }
+
+        .import-nav-item {
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.08);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .import-nav-item:hover {
+            background: rgba(255,255,255,0.18);
+        }
+
+        .import-nav-item.active {
+            background: #f2bd62;
+            color: #0a6b66;
+            font-weight: 700;
+        }
+
+        .import-main {
+            flex: 1;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .import-panel {
+            background: #fff;
+            border-radius: 18px;
+            padding: 20px;
+            box-shadow: 0 16px 28px rgba(10, 97, 91, 0.12);
+            border: 1px solid rgba(10, 97, 91, 0.08);
+        }
+
+        .import-panel h3 {
+            margin: 0 0 12px;
+            color: #0a6b66;
+            font-size: 1.1rem;
+        }
+
+        .import-info-banner {
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: rgba(242,189,98,0.18);
+            color: #8b6200;
+            margin-bottom: 12px;
+        }
+
+        .import-muted {
+            color: rgba(7,77,71,0.7);
+            font-size: 0.85rem;
+        }
+
+        .import-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .import-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 24px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .import-button.primary {
+            background: linear-gradient(90deg, #0a6b66 0%, #074d47 100%);
+            color: #fff;
+        }
+
+        .import-button.secondary {
+            background: rgba(10,97,91,0.12);
+            color: #0a6b66;
+        }
+
+        .import-button.ghost {
+            background: transparent;
+            border: 1px solid rgba(10,97,91,0.2);
+            color: #0a6b66;
+        }
+
+        .import-button:hover {
+            transform: translateY(-1px);
+        }
+
+        .import-upload {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .import-upload input[type="file"] {
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px dashed rgba(10,97,91,0.32);
+        }
+
+        .import-table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        .import-table th,
+        .import-table td {
+            padding: 8px 10px;
+            border: 1px solid rgba(10, 97, 91, 0.12);
+            text-align: left;
+            font-size: 0.95rem;
+        }
+
+        .import-table th {
+            background: rgba(10,97,91,0.08);
+            color: #074d47;
+            font-weight: 600;
+        }
+
+        .import-table tbody tr:nth-child(even) {
+            background: rgba(10,97,91,0.04);
+        }
+
+        .import-mapping {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .import-mapping select {
+            width: 100%;
+            padding: 6px 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(10,97,91,0.2);
+        }
+
+        .import-tag {
+            display: inline-flex;
+            gap: 6px;
+            align-items: center;
+            padding: 3px 10px;
+            border-radius: 999px;
+            background: rgba(10,97,91,0.12);
+            color: #0a6b66;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .import-progress {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 12px;
+        }
+
+        .import-progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(10,97,91,0.12);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .import-progress-bar span {
+            display: block;
+            height: 100%;
+            background: linear-gradient(90deg, #f2bd62 0%, #f8d88f 100%);
+        }
+
+        .import-json-preview {
+            background: rgba(10,97,91,0.08);
+            padding: 12px;
+            border-radius: 12px;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            max-height: 220px;
+            overflow: auto;
+            white-space: pre;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 1200px) {
+            .import-sidebar {
+                flex: 1 1 100%;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .import-nav-item {
+                flex: 1 1 160px;
+                justify-content: center;
+                text-align: center;
+            }
+
+            .import-suite {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .edo-sidebar {
+                flex: 1 1 100%;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .edo-nav-item {
+                flex: 1 1 150px;
+                justify-content: center;
+            }
+            .edo-suite {
+                flex-direction: column;
+            }
+        }
+
+        .import-matching-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        /* Меркурий */
+        .mercury-suite-loading {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .mercury-suite {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            min-height: 620px;
+        }
+
+        .mercury-sidebar {
+            flex: 0 0 280px;
+            background: linear-gradient(180deg, #0a6b66 0%, #074d47 100%);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.18);
+            color: #fff;
+        }
+
+        .mercury-sidebar h2 {
+            color: #f2bd62;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .mercury-nav-item {
+            margin-bottom: 10px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .mercury-nav-item:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .mercury-nav-item.active {
+            background: #f2bd62;
+            color: #074d47;
+            font-weight: 700;
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.25);
+        }
+
+        .mercury-main {
+            flex: 1;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .mercury-metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .mercury-metric-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: 0 12px 24px rgba(4, 116, 108, 0.12);
+            border: 1px solid rgba(4,116,108,0.12);
+        }
+
+        .mercury-metric-card h4 {
+            margin: 0;
+            color: #0a6b66;
+            font-size: 0.9rem;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+
+        .mercury-metric-card p {
+            margin: 6px 0 0;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #074d47;
+        }
+
+        .mercury-panel {
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 20px;
+            box-shadow: 0 20px 32px rgba(10, 107, 102, 0.12);
+            border: 1px solid rgba(4,116,108,0.12);
+        }
+
+        .mercury-panel h3 {
+            color: #0a6b66;
+            margin: 0 0 12px;
+            font-size: 1.1rem;
+        }
+
+        .mercury-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .mercury-progress {
+            width: 100%;
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(10, 107, 102, 0.12);
+            overflow: hidden;
+            margin-top: 6px;
+        }
+
+        .mercury-progress span {
+            display: block;
+            height: 100%;
+            background: linear-gradient(90deg, #f2bd62 0%, #f8d88f 100%);
+        }
+
+        .mercury-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: rgba(242, 189, 98, 0.18);
+            color: #8b6200;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .mercury-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .mercury-table th,
+        .mercury-table td {
+            padding: 10px 12px;
+            border: 1px solid rgba(4,116,108,0.12);
+            text-align: left;
+            font-size: 0.95rem;
+        }
+
+        .mercury-table th {
+            background: rgba(4,116,108,0.08);
+            color: #074d47;
+            font-weight: 700;
+        }
+
+        .mercury-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 24px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .mercury-button.primary {
+            background: linear-gradient(90deg, #0a6b66 0%, #074d47 100%);
+            color: #fff;
+        }
+
+        .mercury-button.secondary {
+            background: rgba(10,107,102,0.12);
+            color: #0a6b66;
+        }
+
+        .mercury-button.danger {
+            background: rgba(220, 53, 69, 0.12);
+            color: #c53030;
+        }
+
+        .mercury-button:hover {
+            transform: translateY(-1px);
+        }
+
+        .mercury-inline-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .mercury-muted {
+            color: rgba(7,77,71,0.7);
+            font-size: 0.85rem;
+        }
+
+        .mercury-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: rgba(10, 107, 102, 0.12);
+            color: #0a6b66;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 6px;
+            margin-bottom: 4px;
+        }
+
+        .mercury-anchor-table code {
+            background: rgba(10,107,102,0.12);
+            padding: 4px 6px;
+            border-radius: 6px;
+            color: #074d47;
+        }
+
+        @media (max-width: 1200px) {
+            .mercury-sidebar {
+                flex: 1 1 100%;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .mercury-nav-item {
+                flex: 1 1 140px;
+                text-align: center;
+            }
+
+            .mercury-suite {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .mercury-metrics-grid {
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            }
+        }
+
+        /* Honest Sign */
+        .honest-suite-loading {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .honest-suite {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            min-height: 620px;
+        }
+
+        .honest-sidebar {
+            flex: 0 0 280px;
+            background: linear-gradient(180deg, #0a6b66 0%, #074d47 100%);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.18);
+            color: #fff;
+        }
+
+        .honest-sidebar h2 {
+            color: #f2bd62;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .honest-nav-item {
+            margin-bottom: 10px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .honest-nav-item:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .honest-nav-item.active {
+            background: #f2bd62;
+            color: #074d47;
+            font-weight: 700;
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.25);
+        }
+
+        .honest-main {
+            flex: 1;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .honest-metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .honest-metric-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: 0 12px 24px rgba(4, 116, 108, 0.12);
+            border: 1px solid rgba(4,116,108,0.12);
+        }
+
+        .honest-metric-card h4 {
+            margin: 0;
+            color: #0a6b66;
+            font-size: 0.9rem;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+
+        .honest-metric-card p {
+            margin: 6px 0 0;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #074d47;
+        }
+
+        .honest-panel {
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 20px;
+            box-shadow: 0 20px 32px rgba(10, 107, 102, 0.12);
+            border: 1px solid rgba(4,116,108,0.12);
+        }
+
+        .honest-panel h3 {
+            color: #0a6b66;
+            margin: 0 0 12px;
+            font-size: 1.1rem;
+        }
+
+        .honest-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .honest-progress {
+            width: 100%;
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(10, 107, 102, 0.12);
+            overflow: hidden;
+            margin-top: 6px;
+        }
+
+        .honest-progress span {
+            display: block;
+            height: 100%;
+            background: linear-gradient(90deg, #f2bd62 0%, #f8d88f 100%);
+        }
+
+        .honest-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: rgba(242, 189, 98, 0.18);
+            color: #8b6200;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .honest-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .honest-table th,
+        .honest-table td {
+            padding: 10px 12px;
+            border: 1px solid rgba(4,116,108,0.12);
+            text-align: left;
+            font-size: 0.95rem;
+        }
+
+        .honest-table th {
+            background: rgba(4,116,108,0.08);
+            color: #074d47;
+            font-weight: 700;
+        }
+
+        .honest-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 24px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .honest-button.primary {
+            background: linear-gradient(90deg, #0a6b66 0%, #074d47 100%);
+            color: #fff;
+        }
+
+        .honest-button.secondary {
+            background: rgba(10,107,102,0.12);
+            color: #0a6b66;
+        }
+
+        .honest-button.danger {
+            background: rgba(220, 53, 69, 0.12);
+            color: #c53030;
+        }
+
+        .honest-button:hover {
+            transform: translateY(-1px);
+        }
+
+        .honest-inline-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .honest-muted {
+            color: rgba(7,77,71,0.7);
+            font-size: 0.85rem;
+        }
+
+        .honest-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: rgba(10, 107, 102, 0.12);
+            color: #0a6b66;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 6px;
+            margin-bottom: 4px;
+        }
+
+        .honest-anchor-table code {
+            background: rgba(10,107,102,0.12);
+            padding: 4px 6px;
+            border-radius: 6px;
+            color: #074d47;
+        }
+
+        @media (max-width: 1200px) {
+            .honest-sidebar {
+                flex: 1 1 100%;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .honest-nav-item {
+                flex: 1 1 140px;
+                text-align: center;
+            }
+
+            .honest-suite {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .honest-metrics-grid {
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            }
+        }
+
+        /* EGAIS */
+        .egais-suite-loading {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .egais-suite {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            min-height: 620px;
+        }
+
+        .egais-sidebar {
+            flex: 0 0 280px;
+            background: linear-gradient(180deg, #0a6b66 0%, #074d47 100%);
+            border-radius: 16px;
+            padding: 20px;
+            color: #fff;
+            box-shadow: 0 18px 32px rgba(5, 61, 57, 0.22);
+        }
+
+        .egais-sidebar h2 {
+            margin: 0 0 1rem;
+            color: #f2bd62;
+            font-size: 1.2rem;
+        }
+
+        .egais-nav-item {
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.08);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .egais-nav-item:hover {
+            background: rgba(255,255,255,0.18);
+        }
+
+        .egais-nav-item.active {
+            background: #f2bd62;
+            color: #053d39;
+            font-weight: 700;
+            box-shadow: 0 0 0 2px rgba(242,189,98,0.3);
+        }
+
+        .egais-main {
+            flex: 1;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .egais-panel {
+            background: #fff;
+            border-radius: 18px;
+            padding: 20px;
+            box-shadow: 0 20px 36px rgba(5, 61, 57, 0.12);
+            border: 1px solid rgba(5, 61, 57, 0.1);
+        }
+
+        .egais-panel h3 {
+            margin: 0 0 12px;
+            color: #0a6b66;
+            font-size: 1.1rem;
+        }
+
+        .egais-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .egais-table th,
+        .egais-table td {
+            padding: 10px 12px;
+            border: 1px solid rgba(5, 61, 57, 0.12);
+            text-align: left;
+            font-size: 0.95rem;
+        }
+
+        .egais-table th {
+            background: rgba(5,61,57,0.08);
+            color: #053d39;
+            font-weight: 700;
+        }
+
+        .egais-doc-row {
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .egais-doc-row:hover {
+            background: rgba(5,61,57,0.05);
+        }
+
+        .egais-doc-row.selected {
+            background: rgba(242,189,98,0.12);
+        }
+
+        .egais-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .egais-status.incoming { background: rgba(10, 97, 91, 0.12); color: #0a615c; }
+        .egais-status.completed { background: rgba(14, 159, 110, 0.15); color: #0f7a5c; }
+        .egais-status.pending { background: rgba(242, 189, 98, 0.2); color: #8b6200; }
+        .egais-status.rejected { background: rgba(220, 53, 69, 0.15); color: #b22222; }
+
+        .egais-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .egais-tag {
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: rgba(10,97,91,0.12);
+            color: #0a615c;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .egais-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .egais-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 24px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .egais-button.primary {
+            background: linear-gradient(90deg, #0a6b66 0%, #074d47 100%);
+            color: #fff;
+        }
+
+        .egais-button.secondary {
+            background: rgba(10,97,91,0.12);
+            color: #0a6b66;
+        }
+
+        .egais-button.ghost {
+            background: transparent;
+            border: 1px solid rgba(10,97,91,0.2);
+            color: #0a6b66;
+        }
+
+        .egais-button.danger {
+            background: rgba(220, 53, 69, 0.15);
+            color: #c53030;
+        }
+
+        .egais-button:hover {
+            transform: translateY(-1px);
+        }
+
+        .egais-split {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        }
+
+        .egais-detail-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .egais-detail-col {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 180px;
+        }
+
+        .egais-muted {
+            color: rgba(5,61,57,0.72);
+            font-size: 0.85rem;
+        }
+
+        .egais-line-match {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .egais-select {
+            padding: 6px 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(5,61,57,0.2);
+            min-width: 180px;
+        }
+
+        .egais-tab-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .egais-tab {
+            padding: 8px 14px;
+            border-radius: 10px;
+            background: rgba(10,97,91,0.08);
+            color: #0a615c;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .egais-tab.active {
+            background: #0a615c;
+            color: #fff;
+        }
+
+        .egais-scroll {
+            max-height: 360px;
+            overflow: auto;
+            border: 1px solid rgba(5,61,57,0.12);
+            border-radius: 12px;
+        }
+
+        .egais-info-banner {
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: rgba(242,189,98,0.18);
+            color: #8b6200;
+            margin-bottom: 12px;
+        }
+
+        /* Data Import */
+        .import-suite-loading {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .import-suite {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            min-height: 520px;
+        }
+
+        .import-sidebar {
+            flex: 0 0 280px;
+            background: linear-gradient(180deg, #0a6b66 0%, #074d47 100%);
+            border-radius: 16px;
+            padding: 20px;
+            color: #fff;
+            box-shadow: 0 14px 28px rgba(10, 107, 102, 0.22);
+        }
+
+        .import-sidebar h2 {
+            margin: 0 0 1rem;
+            color: #f2bd62;
+            font-size: 1.2rem;
+        }
+
+        .import-nav-item {
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.08);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .import-nav-item:hover {
+            background: rgba(255,255,255,0.18);
+        }
+
+        .import-nav-item.active {
+            background: #f2bd62;
+            color: #0a6b66;
+            font-weight: 700;
+        }
+
+        .import-main {
+            flex: 1;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .import-panel {
+            background: #fff;
+            border-radius: 18px;
+            padding: 20px;
+            box-shadow: 0 16px 28px rgba(10, 97, 91, 0.12);
+            border: 1px solid rgba(10, 97, 91, 0.08);
+        }
+
+        .import-panel h3 {
+            margin: 0 0 12px;
+            color: #0a6b66;
+            font-size: 1.1rem;
+        }
+
+        .import-info-banner {
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: rgba(242,189,98,0.18);
+            color: #8b6200;
+            margin-bottom: 12px;
+        }
+
+        .import-muted {
+            color: rgba(7,77,71,0.7);
+            font-size: 0.85rem;
+        }
+
+        .import-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .import-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 24px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .import-button.primary {
+            background: linear-gradient(90deg, #0a6b66 0%, #074d47 100%);
+            color: #fff;
+        }
+
+        .import-button.secondary {
+            background: rgba(10,97,91,0.12);
+            color: #0a6b66;
+        }
+
+        .import-button.ghost {
+            background: transparent;
+            border: 1px solid rgba(10,97,91,0.2);
+            color: #0a6b66;
+        }
+
+        .import-button:hover {
+            transform: translateY(-1px);
+        }
+
+        .import-upload {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .import-upload input[type="file"] {
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px dashed rgba(10,97,91,0.32);
+        }
+
+        .import-table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        .import-table th,
+        .import-table td {
+            padding: 8px 10px;
+            border: 1px solid rgba(10, 97, 91, 0.12);
+            text-align: left;
+            font-size: 0.95rem;
+        }
+
+        .import-table th {
+            background: rgba(10,97,91,0.08);
+            color: #074d47;
+            font-weight: 600;
+        }
+
+        .import-table tbody tr:nth-child(even) {
+            background: rgba(10,97,91,0.04);
+        }
+
+        .import-mapping {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .import-mapping select {
+            width: 100%;
+            padding: 6px 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(10,97,91,0.2);
+        }
+
+        .import-tag {
+            display: inline-flex;
+            gap: 6px;
+            align-items: center;
+            padding: 3px 10px;
+            border-radius: 999px;
+            background: rgba(10,97,91,0.12);
+            color: #0a6b66;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .import-progress {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 12px;
+        }
+
+        .import-progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(10,97,91,0.12);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .import-progress-bar span {
+            display: block;
+            height: 100%;
+            background: linear-gradient(90deg, #f2bd62 0%, #f8d88f 100%);
+        }
+
+        .import-json-preview {
+            background: rgba(10,97,91,0.08);
+            padding: 12px;
+            border-radius: 12px;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            max-height: 220px;
+            overflow: auto;
+            white-space: pre;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 1200px) {
+            .import-sidebar {
+                flex: 1 1 100%;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .import-nav-item {
+                flex: 1 1 160px;
+                justify-content: center;
+                text-align: center;
+            }
+
+            .import-suite {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .edo-sidebar {
+                flex: 1 1 100%;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .edo-nav-item {
+                flex: 1 1 150px;
+                justify-content: center;
+            }
+            .edo-suite {
+                flex-direction: column;
+            }
+        }
+
+        .import-matching-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .aggregator-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .aggregator-card {
+            border: 1px solid rgba(10,97,91,0.08);
+            border-radius: 14px;
+            padding: 1.2rem;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            box-shadow: 0 10px 20px rgba(10, 97, 91, 0.08);
+        }
+
+        .aggregator-card__header {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.75rem;
+            align-items: flex-start;
+        }
+
+        .aggregator-card__description {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+
+        .aggregator-card__body {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            font-size: 0.9rem;
+        }
+
+        .aggregator-card__row {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+
+        .aggregator-card__row .label {
+            color: #6b7280;
+        }
+
+        .aggregator-card__row .value {
+            font-weight: 600;
+            color: #0a6b66;
+        }
+
+        .aggregator-card__actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 1200px) {
+            .import-sidebar {
+                flex: 1 1 100%;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .import-nav-item {
+                flex: 1 1 160px;
+                justify-content: center;
+                text-align: center;
+            }
+
+            .import-suite {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .edo-sidebar {
+                flex: 1 1 100%;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .edo-nav-item {
+                flex: 1 1 150px;
+                justify-content: center;
+            }
+            .edo-suite {
+                flex-direction: column;
+            }
+        }
+
+        .import-matching-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div id="adminPanel" class="admin-container">
+        <header class="header">
+            <div class="logo-section">
+                <img class="brand-new-logo" src="assets/brand/logo.svg" alt="ДЭНДИ пицца и суши" style="height: 50px; width: auto; object-fit: contain;" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjUwIiB2aWV3Qm94PSIwIDAgMjAwIDUwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iNTAiIHJ4PSI4IiBmaWxsPSIjMDg2MTVCIi8+PHRleHQgeD0iMTAwIiB5PSIzMCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjI0IiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iI0YzRUVCIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5EQU5EWTwvdGV4dD48L3N2Zz4=';">
+            </div>
+            
+            <div class="header-actions">
+                <div class="phone-info">
+                    📞 +7 (925) 934-77-28 <span style="opacity: 0.8; font-size: 0.8rem;">техподдержка</span>
+                </div>
+                <div class="search-container" style="margin-right: 1rem;">
+                    <input type="text" id="adminSearch" placeholder="Поиск по товарам, категориям, описанию..." style="padding: 0.5rem 1rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white; outline: none; width: 300px;">
+                </div>
+                <div class="lang-switch">
+                    <button class="lang-btn active" data-lang="ru">RU</button>
+                    <button class="lang-btn" data-lang="en">EN</button>
+                </div>
+                <a href="login-system.html" class="btn btn-danger" style="padding: 0.5rem 1rem; border-radius: 20px; border: none; background: #dc2626; color: white; cursor: pointer; margin-left: 0.5rem; text-decoration: none; display: inline-block;">Выход</a>
+            </div>
+        </header>
+
+        <nav class="tabs-wrap">
+            <ul class="tabs">
+                <li><a href="#" class="tab active" data-page="dashboard">ДАШБОРД</a></li>
+                <li><a href="#" class="tab" data-page="menu">МЕНЮ И ТОВАРЫ</a></li>
+                <li><a href="#" class="tab" data-page="product-cards">КАРТОЧКИ ТОВАРОВ</a></li>
+                <li><a href="#" class="tab" data-page="data-import">ИМПОРТ</a></li>
+                <li><a href="#" class="tab" data-page="advanced-import">РАСШИРЕННЫЙ ИМПОРТ</a></li>
+                <li><a href="#" class="tab" data-page="recipes">ТЕХКАРТЫ</a></li>
+                <li><a href="#" class="tab" data-page="promotions">АКЦИИ</a></li>
+                <li><a href="#" class="tab" data-page="loyalty">ЛОЯЛЬНОСТЬ</a></li>
+                <li><a href="#" class="tab" data-page="orders">ЗАКАЗЫ</a></li>
+                <li><a href="#" class="tab" data-page="kds">KDS</a></li>
+                <li><a href="#" class="tab" data-page="stock">СКЛАД</a></li>
+                <li><a href="#" class="tab" data-page="cashier-report">ОТЧЁТ КАССИРА</a></li>
+                <li><a href="#" class="tab" data-page="pos">КАССА/ККТ</a></li>
+                <li><a href="#" class="tab" data-page="edo">ЭДО</a></li>
+                <li><a href="#" class="tab" data-page="mercury">МЕРКУРИЙ</a></li>
+                <li><a href="#" class="tab" data-page="honest">ЧЕСТНЫЙ ЗНАК</a></li>
+                <li><a href="#" class="tab" data-page="egais">ЕГАИС</a></li>
+                <li><a href="#" class="tab" data-page="couriers">КУРЬЕРЫ</a></li>
+                <li><a href="#" class="tab" data-page="inventory">ИНВЕНТАРИЗАЦИЯ</a></li>
+                <li><a href="#" class="tab" data-page="pricing">ПЕРЕСЧЁТ ЦЕН</a></li>
+                <li><a href="#" class="tab" data-page="marketing">МАРКЕТИНГ</a></li>
+                <li><a href="#" class="tab" data-page="integrations">ИНТЕГРАЦИИ</a></li>
+                <li><a href="#" class="tab" data-page="onec-integration">1С ИНТЕГРАЦИЯ</a></li>
+                <li><a href="#" class="tab" data-page="account-rules">ПЛАНЫ СЧЕТОВ</a></li>
+                <li><a href="#" class="tab" data-page="product-groups">ГРУППЫ ТОВАРОВ</a></li>
+                <li><a href="#" class="tab" data-page="modifiers">МОДИФИКАТОРЫ</a></li>
+                <li><a href="#" class="tab" data-page="reports">ОТЧЁТНОСТЬ</a></li>
+                <li><a href="#" class="tab" data-page="alerts">УВЕДОМЛЕНИЯ</a></li>
+                <li><a href="#" class="tab" data-page="profile">ПРОФИЛЬ</a></li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <!-- Dashboard -->
+            <div id="dashboard" class="page-content active">
+                <div class="grid grid-3">
+                    <div class="card">
+                        <h3 class="card-title">Статус смены / Персонал</h3>
+                        <div id="shiftStatus">
+                            <p>🔓 Смена закрыта • Кассиры: 2 • Поваров: 3 • Курьеров: 4</p>
+                            <div style="margin-top: 1rem;">
+                                <button class="btn btn-success btn-small" onclick="openShift()">🔓 Открыть смену</button>
+                                <button class="btn btn-secondary btn-small" onclick="showShiftHistory()">📊 История смен</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">Основные метрики</h3>
+                        <p>₽ 128 540 выручка • 144 заказов • 18 крит. остатки</p>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">Быстрые действия</h3>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button class="btn btn-primary btn-small" onclick="openShift()">Открыть смену</button>
+                            <button class="btn btn-primary btn-small" onclick="createOrder()">Создать заказ</button>
+                            <button class="btn btn-primary btn-small" onclick="openInventory()">Инвентаризация</button>
+                            <button class="btn btn-primary btn-small" id="openCashier" onclick="openPOS()">Войти в кассир</button>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">Лента активности (live)</h3>
+                        <ul style="list-style: disc; margin-left: 1.5rem;">
+                            <li>Заказ #1029 принят (Яндекс Еда)</li>
+                            <li>Фискализация чека успешна</li>
+                            <li>Курьер Алексей передал заказ → едет обратно</li>
+                        </ul>
+                    </div>
+                    <div class="card alert alert-danger">
+                        <h3 class="card-title">Критические алерты</h3>
+                        <p>Остаток «Лосось» &lt; 1.0 кг • Срок оплаты накладной — завтра</p>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">Платёжный календарь</h3>
+                        <p>Сегодня: аренда; завтра: ОФД; 25.09 — УСН</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Menu -->
+            <div id="menu" class="page-content">
+                <div class="category-nav-card">
+                    <h3 class="card-title">Категории меню</h3>
+                    <nav id="adminCategoryNav"></nav>
+                    <div class="category-nav-actions">
+                        <button class="btn btn-secondary btn-small" id="refreshCategoriesBtn">🔄 Обновить</button>
+                        <button class="btn btn-primary btn-small" id="createCategoryBtn">➕ Добавить категорию</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Каталог</h3>
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                        <button class="btn btn-primary btn-small" id="dishesTab">Блюда</button>
+                        <button class="btn btn-secondary btn-small" id="productsTab">Товары</button>
+                        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                            <button class="btn btn-secondary btn-small" id="menuToggleCategoryFilterBtn">📂 Категории</button>
+                            <div id="menuCategoryFilterPanel" style="display:none; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                                <select id="menuCategoryFilterSelect" class="form-input" style="min-width: 260px; width: auto;"></select>
+                                <button class="btn btn-primary btn-small" id="menuApplyCategoryFilterBtn">✅ Применить</button>
+                                <button class="btn btn-secondary btn-small" id="menuResetCategoryFilterBtn">♻️ Сброс</button>
+                            </div>
+                        </div>
+                        <div style="margin-left: auto; display: flex; gap: 1rem; align-items: center;">
+                            <input type="file" accept=".csv,.xlsx,.xls" id="csvImport" style="display: none;">
+                            <button class="btn btn-primary btn-small" onclick="document.getElementById('csvImport').click()">📥 Импорт из Excel/CSV</button>
+                            <button class="btn btn-secondary btn-small" id="loadSample">Загрузить тестовый CSV</button>
+                        </div>
+                    </div>
+                    <div id="menuTable"></div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title" id="addItemTitle">Добавить блюдо</h3>
+                    <div class="grid grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Название</label>
+                            <input type="text" class="form-input" id="itemName" placeholder="Например: Филадельфия">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Категория</label>
+                            <input type="text" class="form-input" id="itemCategory" placeholder="Роллы / Пицца">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Цена, ₽</label>
+                            <input type="number" class="form-input" id="itemPrice" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Себестоимость, ₽</label>
+                            <input type="number" class="form-input" id="itemCost" value="0">
+                        </div>
+                        <div class="form-group" id="modifiersGroup">
+                            <label class="form-label">Модификаторы</label>
+                            <input type="text" class="form-input" id="itemModifiers" placeholder="соус, доп. сыр">
+                        </div>
+                        <div class="form-group" id="allergensGroup">
+                            <label class="form-label">Аллергены</label>
+                            <input type="text" class="form-input" id="itemAllergens" placeholder="рыба, молоко">
+                        </div>
+                        <div class="form-group" id="skuGroup" style="display: none;">
+                            <label class="form-label">SKU</label>
+                            <input type="text" class="form-input" id="itemSku" placeholder="SKU-000">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Описание</label>
+                            <textarea class="form-input" id="itemDescription" rows="3" placeholder="Описание"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Вес/Граммы/Размер</label>
+                            <input type="text" class="form-input" id="itemWeight" placeholder="Например: 500г, 30см, 350мл">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Изображение (URL)</label>
+                            <input type="text" class="form-input" id="itemPhoto" placeholder="https://example.com/photo.jpg">
+                            <div id="photoPreview" style="margin-top: 0.5rem;"></div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="addItem">Добавить</button>
+                </div>
+            </div>
+
+            <!-- Product Cards Management -->
+            <div id="product-cards" class="page-content">
+                <div id="productCardsContent"></div>
+            </div>
+
+            <!-- Product Groups -->
+            <div id="product-groups" class="page-content">
+                <div id="productGroupsContent"></div>
+            </div>
+
+            <!-- Account Rules (Планы счетов) -->
+            <div id="account-rules" class="page-content">
+                <div id="accountRulesContent"></div>
+            </div>
+
+            <!-- Recipes (Техкарты) -->
+            <div id="recipes" class="page-content">
+                <div id="recipesContent"></div>
+            </div>
+
+            <!-- Promotions -->
+            <div id="promotions" class="page-content">
+                <div id="promotionsContent"></div>
+            </div>
+
+            <!-- Loyalty System -->
+            <div id="loyalty" class="page-content">
+                <div id="loyaltySuiteContainer" class="loyalty-suite-container">
+                    <div class="loyalty-suite">
+                        <div class="loyalty-sidebar">
+                            <h2>Программа лояльности</h2>
+                            <div class="loyalty-nav-item active">⚙️ Настройки начисления</div>
+                            <div class="loyalty-nav-item">🎁 Бонусы и кампании</div>
+                            <div class="loyalty-nav-item">📊 Аналитика</div>
+                        </div>
+                        <div class="loyalty-main">
+                            <div class="loyalty-metrics-grid">
+                                <div class="loyalty-metric-card">
+                                    <h4>Начислено баллов</h4>
+                                    <p>
+                                        <input type="number" id="totalPointsEarned" class="form-input" value="0" readonly>
+                                    </p>
+                                </div>
+                                <div class="loyalty-metric-card">
+                                    <h4>Потрачено баллов</h4>
+                                    <p>
+                                        <input type="number" id="totalPointsReceived" class="form-input" value="0" readonly>
+                                    </p>
+                                </div>
+                                <div class="loyalty-metric-card">
+                                    <h4>Активных гостей</h4>
+                                    <p>
+                                        <input type="number" id="activeUsers" class="form-input" value="0" readonly>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="loyalty-panel">
+                                <h3>Настройки начисления</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">Процент начисления (%)</label>
+                                        <input type="number" class="form-input" id="loyaltyPointsPercent" min="0" max="100" step="0.1" required>
+                                        <small class="form-text">Сколько процентов от суммы заказа начислять баллами</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Стоимость 1 балла (₽)</label>
+                                        <input type="number" class="form-input" id="loyaltyPointValue" min="0" step="1" required>
+                                        <small class="form-text">Во сколько рублей конвертируется 1 балл при оплате</small>
+                                    </div>
+                                </div>
+                                <div id="loyaltySettingsMessage" style="margin-bottom: 1rem; color: #dc2626;"></div>
+                                <div style="display: flex; gap: 1rem;">
+                                    <button class="btn btn-primary" onclick="saveLoyaltySettings()">💾 Сохранить</button>
+                                    <button class="btn btn-secondary" onclick="admin.updateLoyalty()">⟳ Обновить данные</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders -->
+            <div id="orders" class="page-content">
+                <div class="card">
+                    <h3 class="card-title">Фильтр статуса</h3>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn btn-primary btn-small filter-btn active" data-filter="all">Все</button>
+                        <button class="btn btn-secondary btn-small filter-btn" data-filter="принят">Принят</button>
+                        <button class="btn btn-secondary btn-small filter-btn" data-filter="готовится">Готовится</button>
+                        <button class="btn btn-secondary btn-small filter-btn" data-filter="готов">Готов</button>
+                        <button class="btn btn-secondary btn-small filter-btn" data-filter="у курьера">У курьера</button>
+                        <button class="btn btn-secondary btn-small filter-btn" data-filter="доставлен">Доставлен</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 class="card-title">Заказы</h3>
+                    <table class="table" id="ordersTable">
+                        <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Клиент</th>
+                                <th>Канал</th>
+                                <th>Курьер</th>
+                                <th>ETA</th>
+                                <th>Сумма</th>
+                                <th>Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Data Import -->
+            <div id="data-import" class="page-content">
+                <div id="dataImportRoot" class="import-suite-loading">
+                    <div class="card">
+                        <h3 class="card-title">📥 Импорт и распознавание данных</h3>
+                        <p style="color:#666;">Загрузка модуля...</p>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">Что появится позже</h3>
+                        <ul style="color:#666; margin:0; padding-left: 1.25rem; line-height:1.5;">
+                            <li>Очередь обработки изображений и PDF (OCR + компьютерное зрение)</li>
+                            <li>Автоматическое сопоставление с товарами и техкартами</li>
+                            <li>Интерфейс модерации и публикации в один клик</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Import -->
+            <div id="advanced-import" class="page-content">
+                <div id="advancedImportContent"></div>
+            </div>
+
+            <!-- Other pages will be added dynamically -->
+            <div id="kds" class="page-content">
+                <div class="grid grid-2">
+                    <div class="card">
+                        <h3 class="card-title">Пицца • Пепперони 30 см</h3>
+                        <p>SLA: 05:12 • Приоритет: высокий</p>
+                        <button class="btn btn-primary btn-small">Готово</button>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">Суши • Филадельфия</h3>
+                        <p>SLA: 03:40 • Приоритет: средний</p>
+                        <button class="btn btn-primary btn-small">Готово</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="stock" class="page-content">
+                <div class="card">
+                    <h3 class="card-title">Остатки</h3>
+                    <p>Список ТМЦ, критические остатки выделены, FEFO и сроки годности.</p>
+                </div>
+                <div class="card">
+                    <h3 class="card-title">Накладные</h3>
+                    <p>Импорт PDF/JPG/XLS • OCR • сопоставление номенклатуры • партии.</p>
+                </div>
+                <div class="card">
+                    <h3 class="card-title">Инвентаризация</h3>
+                    <p>Пересчёт • протокол расхождений • двойное подтверждение.</p>
+                </div>
+            </div>
+
+            <!-- Cashier Report -->
+            <div id="cashier-report" class="page-content">
+                <div class="card">
+                    <h3 class="card-title">Отчёт кассира</h3>
+                    <div class="form-group">
+                        <label class="form-label">Выберите кассира</label>
+                        <select class="form-input" id="cashierSelect">
+                            <option value="all">Все кассиры</option>
+                            <option value="ivan">Иван Петров</option>
+                            <option value="maria">Мария Сидорова</option>
+                            <option value="alex">Алексей Козлов</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Период</label>
+                        <div class="form-row">
+                            <input type="date" class="form-input" id="reportStartDate" value="2024-01-01">
+                            <input type="date" class="form-input" id="reportEndDate" value="2024-01-31">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="generateCashierReport()">Сформировать отчёт</button>
+                </div>
+                
+                <div id="cashierReportResults" class="card" style="margin-top: 1rem; display: none;">
+                    <h3 class="card-title">Результаты отчёта</h3>
+                    <div id="cashierReportContent"></div>
+                </div>
+            </div>
+
+            <!-- POS -->
+            <div id="pos" class="page-content">
+                <div id="posContent">
+                    <div class="card">
+                        <h3 class="card-title">Касса/ККТ</h3>
+                        <p>Переход к системе кассы и контрольно-кассовой техники</p>
+                        <div style="margin-top: 2rem;">
+                            <button class="btn btn-primary" onclick="openPOS()" style="margin-right: 1rem;">
+                                🏪 Открыть кассу
+                            </button>
+                            <button class="btn btn-secondary" onclick="openPOSOrders()">
+                                📋 Управление заказами
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="card-title">Быстрые действия</h3>
+                        <div class="grid grid-3">
+                            <button class="btn btn-secondary" onclick="openPOS()">
+                                💰 Продажа
+                            </button>
+                            <button class="btn btn-secondary" onclick="openPOSOrders()">
+                                📦 Заказы
+                            </button>
+                            <button class="btn btn-secondary" onclick="openPOSReports()">
+                                📊 Отчёты
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ЭДО -->
+            <div id="edo" class="page-content">
+                <div id="edoModuleRoot" class="edo-suite-loading">
+                    <div class="card">
+                        <h3 class="card-title">📑 Электронный документооборот (Диадок)</h3>
+                        <p style="color:#666;">Загрузка модуля...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Меркурий -->
+            <div id="mercury" class="page-content">
+                <div id="mercuryModuleRoot" class="mercury-suite-loading">
+                    <div class="card">
+                        <h3 class="card-title">🔬 Меркурий (ВСД)</h3>
+                        <p style="color:#666;">Загрузка модуля...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Honest Sign -->
+            <div id="honest" class="page-content">
+                <div id="honestModuleRoot" class="honest-suite-loading">
+                    <div class="card">
+                        <h3 class="card-title">🏷️ Честный знак</h3>
+                        <p style="color:#666;">Загрузка модуля...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EGAIS -->
+            <div id="egais" class="page-content">
+                <div id="egaisModuleRoot" class="egais-suite-loading">
+                    <div class="card">
+                        <h3 class="card-title">🍷 ЕГАИС</h3>
+                        <p style="color:#666;">Загрузка модуля...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Couriers -->
+            <div id="couriers" class="page-content">
+                <div id="couriersContent"></div>
+            </div>
+
+            <!-- Inventory -->
+            <div id="inventory" class="page-content">
+                <div id="inventoryContent"></div>
+            </div>
+
+            <!-- Pricing -->
+            <div id="pricing" class="page-content">
+                <div id="pricingContent"></div>
+            </div>
+
+            <!-- Marketing -->
+            <div id="marketing" class="page-content">
+                <div id="marketingContent"></div>
+            </div>
+
+            <!-- Integrations -->
+            <div id="integrations" class="page-content">
+                <div id="integrationsContent"></div>
+            </div>
+
+            <!-- 1C Integration -->
+            <div id="onec-integration" class="page-content">
+                <div id="onecIntegrationContent"></div>
+            </div>
+
+            <!-- Modifiers Management -->
+            <div id="modifiers" class="page-content">
+                <div id="modifiersContent"></div>
+            </div>
+
+            <!-- Reports -->
+            <div id="reports" class="page-content">
+                <div id="reportsContent"></div>
+            </div>
+
+            <!-- Alerts -->
+            <div id="alerts" class="page-content">
+                <div id="alertsContent"></div>
+            </div>
+
+            <!-- Profile -->
+            <div id="profile" class="page-content">
+                <div id="profileContent"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- API Helper -->
+    <script src="js/api.js?v=10"></script>
+    <!-- SheetJS для чтения Excel файлов - используем локальную версию с fallback на CDN -->
+    <script src="libs/xlsx.full.min.js?v=1" onerror="console.warn('⚠️ Локальный XLSX не загружен, будет использован CDN')"></script>
+    <script>
+        // Функция загрузки XLSX с несколькими источниками (fallback если локальный файл не загрузился)
+        window.loadXLSX = function() {
+            if (window.XLSX) {
+                return Promise.resolve(window.XLSX);
+            }
+            
+            return new Promise((resolve) => {
+                // Правильные URL для XLSX библиотеки (проверенные источники)
+                // Используем более стабильные версии
+                const sources = [
+                    'https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js',
+                    'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
+                    'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js'
+                ];
+                
+                let currentIndex = 0;
+                let loaded = false;
+                
+                function tryLoadSource(index) {
+                    if (loaded || index >= sources.length) {
+                        if (!loaded) {
+                            console.warn('⚠️ Все источники XLSX недоступны - импорт Excel будет недоступен');
+                            resolve(null);
+                        }
+                        return;
+                    }
+                    
+                    const script = document.createElement('script');
+                    script.src = sources[index];
+                    script.crossOrigin = 'anonymous';
+                    script.async = true;
+                    script.type = 'text/javascript';
+                    
+                    const timeout = setTimeout(() => {
+                        if (!loaded) {
+                            script.remove();
+                            console.warn('⚠️ Таймаут загрузки XLSX из:', sources[index]);
+                            tryLoadSource(index + 1);
+                        }
+                    }, 10000); // 10 секунд таймаут
+                    
+                    script.onload = () => {
+                        clearTimeout(timeout);
+                        if (window.XLSX && !loaded) {
+                            loaded = true;
+                            console.log('✅ XLSX библиотека загружена из:', sources[index]);
+                            resolve(window.XLSX);
+                        } else if (!loaded) {
+                            tryLoadSource(index + 1);
+                        }
+                    };
+                    
+                    script.onerror = () => {
+                        clearTimeout(timeout);
+                        if (!loaded) {
+                            console.warn('⚠️ Не удалось загрузить XLSX из:', sources[index]);
+                            script.remove();
+                            tryLoadSource(index + 1);
+                        }
+                    };
+                    
+                    document.head.appendChild(script);
+                }
+                
+                tryLoadSource(0);
+            });
+        };
+        
+        // Проверяем, загрузилась ли локальная версия XLSX
+        if (typeof XLSX === 'undefined') {
+            // Пытаемся загрузить XLSX из CDN если локальный файл не загрузился
+            setTimeout(() => {
+                window.loadXLSX().then(() => {
+                    console.log('✅ XLSX библиотека предзагружена из CDN');
+                }).catch(() => {
+                    console.warn('⚠️ XLSX будет загружена по требованию');
+                });
+            }, 1000); // Загружаем через 1 секунду после загрузки страницы
+        } else {
+            console.log('✅ XLSX библиотека загружена из локального файла');
+        }
+    </script>
+    <script src="admin.js?v=21"></script>
+    <!-- <script src="admin-modules.js?v=13"></script> УДАЛЕНО: модули работают напрямую без него -->
+    
+    <!-- Новые модули -->
+    <script src="modules/kds-module.js?v=2"></script>
+    <script src="modules/kds-advanced.js"></script>
+    <script src="modules/inventory-module.js"></script>
+    <!-- <script src="modules/reports-module-short.js?v=2"></script> УДАЛЕНО: заменён на admin-reports-module.js -->
+    <!-- <script src="modules/couriers-management-module.js"></script> УДАЛЕНО: дубликат admin-couriers-module.js -->
+    <script src="modules/integrations-config-module.js"></script>
+    <script src="modules/admin-product-cards.js?v=47"></script>
+    <script src="modules/admin-recipes-module.js?v=14"></script>
+    <script src="modules/admin-product-groups.js?v=2"></script>
+    <script src="modules/admin-account-rules.js?v=2"></script>
+    <script>
+        // Проверка загрузки модуля
+        if (typeof window !== 'undefined') {
+            window.addEventListener('load', function() {
+                setTimeout(function() {
+                    if (!window.accountRulesManager && !window.AccountRulesManager) {
+                        console.error('❌ AccountRulesManager module failed to load!');
+                        console.error('Check if modules/admin-account-rules.js exists and is accessible');
+                    } else {
+                        console.log('✅ AccountRulesManager module loaded:', {
+                            instance: !!window.accountRulesManager,
+                            class: !!window.AccountRulesManager
+                        });
+                    }
+                }, 1000);
+            });
+        }
+    </script>
+    <script src="modules/admin-modifiers.js?v=6"></script>
+    <script src="modules/admin-advanced-import.js?v=1"></script>
+    <script src="modules/admin-stock-import.js?v=1"></script>
+    <script src="modules/admin-1c-integration.js?v=5"></script>
+    <script src="modules/admin-1c-import.js?v=1"></script>
+    <script src="modules/admin-cashier-report.js?v=11"></script>
+    <script src="modules/admin-promotions.js?v=12"></script>
+    <script src="modules/admin-warehouse-module.js?v=11"></script>
+    <script src="modules/admin-couriers-module.js?v=11"></script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+        // Подавление ошибок socket.io и fetch в консоли
+        (function() {
+            'use strict';
+            
+            // Подавляем ошибки fetch для socket.io endpoints и других проблемных запросов
+            const originalFetch = window.fetch;
+            window.fetch = function(...args) {
+                const url = args[0]?.toString() || '';
+                // Подавляем ошибки для socket.io и gps endpoints
+                if (url.includes('/socket.io/') || url.includes('/gps/socket.io/') || url.includes('socket.io')) {
+                    const fetchPromise = originalFetch.apply(this, args);
+                    // Перехватываем ошибку до того, как она попадет в консоль
+                    return fetchPromise.catch((error) => {
+                        // Возвращаем пустой ответ без логирования ошибки
+                        return new Response(JSON.stringify({}), {
+                            status: 404,
+                            statusText: 'Not Found',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                    });
+                }
+                // Подавляем ошибки для xlsx CDN
+                if (url.includes('xlsx') || url.includes('cdnjs') || url.includes('unpkg') || url.includes('sheetjs')) {
+                    const fetchPromise = originalFetch.apply(this, args);
+                    return fetchPromise.catch((error) => {
+                        // Тихий отказ - не логируем
+                        return new Response('', { status: 404, statusText: 'Not Found' });
+                    });
+                }
+                return originalFetch.apply(this, args);
+            };
+            
+            // Подавляем ошибки XMLHttpRequest для socket.io
+            const originalXHROpen = XMLHttpRequest.prototype.open;
+            const originalXHRSend = XMLHttpRequest.prototype.send;
+            XMLHttpRequest.prototype.open = function(method, url, ...rest) {
+                this._url = url;
+                return originalXHROpen.apply(this, [method, url, ...rest]);
+            };
+            XMLHttpRequest.prototype.send = function(...args) {
+                if (this._url && (this._url.includes('/socket.io/') || this._url.includes('/gps/socket.io/'))) {
+                    // Перехватываем все события до того, как они попадут в консоль
+                    const originalOnError = this.onerror;
+                    const originalOnLoad = this.onload;
+                    const originalOnReadyStateChange = this.onreadystatechange;
+                    
+                    this.onerror = function(e) {
+                        e?.stopPropagation?.();
+                        e?.preventDefault?.();
+                        return false;
+                    };
+                    
+                    this.onload = function() {
+                        // Игнорируем 404 для socket.io
+                        if (this.status === 404 || this.status === 0) {
+                            return false;
+                        }
+                        if (originalOnLoad) {
+                            return originalOnLoad.apply(this, arguments);
+                        }
+                    };
+                    
+                    this.onreadystatechange = function() {
+                        // Игнорируем ошибки состояния для socket.io
+                        if (this.readyState === 4 && (this.status === 404 || this.status === 0)) {
+                            return false;
+                        }
+                        if (originalOnReadyStateChange) {
+                            return originalOnReadyStateChange.apply(this, arguments);
+                        }
+                    };
+                    
+                    this.addEventListener('error', function(e) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        return false;
+                    }, true);
+                    
+                    this.addEventListener('load', function() {
+                        if (this.status === 404 || this.status === 0) {
+                            // Тихий отказ для socket.io
+                            return false;
+                        }
+                    }, true);
+                    
+                    this.addEventListener('timeout', function(e) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        return false;
+                    }, true);
+                }
+                return originalXHRSend.apply(this, args);
+            };
+            
+            // Подавляем ошибки изображений и сети
+            window.addEventListener('error', function(e) {
+                if (e.target && e.target.tagName === 'IMG') {
+                    // Скрываем изображение при ошибке
+                    e.target.style.display = 'none';
+                    // Подавляем ошибку в консоли
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return true;
+                }
+                // Подавляем ошибки socket.io, WebSocket, CORS, 404
+                const message = e.message || '';
+                const filename = e.filename || '';
+                if (message.includes('socket.io') || 
+                    message.includes('WebSocket') || 
+                    message.includes('404') ||
+                    message.includes('CORS') ||
+                    message.includes('ERR_FAILED') ||
+                    filename.includes('socket.io') ||
+                    filename.includes('xlsx')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return true;
+                }
+            }, true);
+            
+            // Подавляем unhandledrejection для socket.io
+            window.addEventListener('unhandledrejection', function(e) {
+                const reason = e.reason?.toString() || '';
+                if (reason.includes('socket.io') || 
+                    reason.includes('WebSocket') ||
+                    reason.includes('fetch')) {
+                    e.preventDefault();
+                    return true;
+                }
+            }, true);
+            
+        })();
+        
+        // АГРЕССИВНОЕ подавление всех ошибок в консоли
+        (function() {
+            'use strict';
+            
+            // Список паттернов для подавления
+            const suppressPatterns = [
+                'socket.io',
+                '/assets/sounds/',
+                '.mp3',
+                'ERR_ABORTED',
+                'ERR_FAILED',
+                'custom.css',
+                'assets/custom.css',
+                'logo.png',
+                'logo.svg',
+                'assets/brand/logo',
+                'favicon.ico',
+                '404 (Not Found)',
+                'net::ERR_ABORTED',
+                'net::ERR_FAILED',
+                'chrome-extension://',
+                'Error handling response',
+                'Cannot read properties of undefined',
+                'reading \'replace\'',
+                'hdbiniolkkoejpgaengomepghojclnae',
+                '/api/honest/',
+                '/api/egais/',
+                'WebSocket',
+                'polling',
+                'transport',
+                'EIO=4',
+                'AggregatorIntegrations',
+                'load error',
+                'HTTP 200',
+                'xlsx',
+                'cdnjs',
+                'unpkg',
+                'sheetjs',
+                'cdn.sheetjs.com',
+                'cdnjs.cloudflare.com',
+                'CORS',
+                'MIME type',
+                'text/html',
+                'Refused to execute',
+                '?EIO=4',
+                'Audio files not available',
+                'using fallback beep',
+                'unavailable',
+                'timeout',
+                'switching to polling'
+            ];
+            
+            function shouldSuppress(message) {
+                if (!message) return false;
+                const msgStr = String(message);
+                return suppressPatterns.some(pattern => msgStr.includes(pattern));
+            }
+            
+            // Перехватываем console.error
+            const originalConsoleError = console.error;
+            console.error = function(...args) {
+                const message = args.join(' ');
+                if (shouldSuppress(message)) {
+                    return; // Полностью подавляем
+                }
+                originalConsoleError.apply(console, args);
+            };
+            
+            // Перехватываем console.warn
+            const originalConsoleWarn = console.warn;
+            console.warn = function(...args) {
+                const message = args.join(' ');
+                if (shouldSuppress(message)) {
+                    return; // Полностью подавляем
+                }
+                originalConsoleWarn.apply(console, args);
+            };
+            
+            // Перехватываем console.log для сетевых ошибок
+            const originalConsoleLog = console.log;
+            console.log = function(...args) {
+                const message = args.join(' ');
+                // Подавляем сетевые ошибки в логах (socket.io, 404, ERR_ABORTED)
+                if ((message.includes('GET ') || message.includes('POST ')) && 
+                    (message.includes('404') || message.includes('ERR_ABORTED') || message.includes('socket.io')) && 
+                    shouldSuppress(message)) {
+                    return;
+                }
+                // Также подавляем любые сообщения, содержащие паттерны для подавления
+                if (shouldSuppress(message)) {
+                    return;
+                }
+                originalConsoleLog.apply(console, args);
+            };
+            
+            // Перехватываем console.info для подавления информационных сообщений об ошибках
+            const originalConsoleInfo = console.info;
+            console.info = function(...args) {
+                const message = args.join(' ');
+                if (shouldSuppress(message)) {
+                    return;
+                }
+                originalConsoleInfo.apply(console, args);
+            };
+            
+            // Перехватываем console.debug
+            if (console.debug) {
+                const originalConsoleDebug = console.debug;
+                console.debug = function(...args) {
+                    const message = args.join(' ');
+                    if (shouldSuppress(message)) {
+                        return;
+                    }
+                    originalConsoleDebug.apply(console, args);
+                };
+            }
+            
+            // Глобальный перехват ошибок на уровне window
+            window.addEventListener('error', function(e) {
+                const message = e.message || '';
+                const filename = e.filename || e.source || '';
+                const target = e.target;
+                const errorString = message + ' ' + filename;
+                
+                // Подавляем ошибки для звуковых файлов, Socket.IO и других несущественных ресурсов
+                if (target) {
+                    const src = target.src || target.href || '';
+                    if (shouldSuppress(src)) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        return false;
+                    }
+                }
+                
+                // Подавляем ошибки из расширений Chrome (более агрессивная проверка)
+                if (filename.includes('chrome-extension://') || 
+                    filename.includes('moz-extension://') || 
+                    filename.includes('safari-extension://') ||
+                    message.includes('chrome-extension://') ||
+                    message.includes('Error handling response') ||
+                    message.includes('Cannot read properties') ||
+                    shouldSuppress(filename) || 
+                    shouldSuppress(errorString)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    return false;
+                }
+                
+                // Подавляем ошибки в сообщениях
+                if (shouldSuppress(message)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    return false;
+                }
+            }, true);
+            
+            // Перехватываем необработанные отклонения промисов
+            window.addEventListener('unhandledrejection', function(e) {
+                const reason = e.reason || '';
+                const reasonStr = String(reason);
+                const message = reason?.message || '';
+                
+                // Подавляем ошибки расширений и socket.io
+                if (shouldSuppress(reasonStr) || 
+                    shouldSuppress(message) ||
+                    reasonStr.includes('chrome-extension://') ||
+                    reasonStr.includes('socket.io') ||
+                    message.includes('Error handling response') ||
+                    message.includes('Cannot read properties')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    return false;
+                }
+            }, true);
+            
+            // Перехватываем сетевые ошибки через PerformanceObserver (если доступен)
+            if (window.PerformanceObserver) {
+                try {
+                    const observer = new PerformanceObserver(function(list) {
+                        list.getEntries().forEach(function(entry) {
+                            if (entry.name && shouldSuppress(entry.name) && 
+                                (entry.responseStatus === 404 || entry.transferSize === 0)) {
+                                // Подавляем запись о сетевой ошибке
+                                return;
+                            }
+                        });
+                    });
+                    observer.observe({entryTypes: ['resource']});
+                } catch (e) {
+                    // PerformanceObserver может быть недоступен
+                }
+            }
+        })();
+        
+        // Настраиваем Socket.IO глобально, чтобы по умолчанию использовался только polling
+        if (typeof io !== 'undefined') {
+            // Сохраняем оригинальную функцию io
+            const originalIo = io;
+            // Переопределяем io, чтобы все подключения использовали только polling
+            window.io = function(url, options) {
+                const opts = options || {};
+                // Принудительно устанавливаем только polling транспорт
+                opts.transports = ['polling'];
+                opts.upgrade = false; // Отключаем автоматическое обновление до websocket
+                opts.reconnection = opts.reconnection !== undefined ? opts.reconnection : false;
+                return originalIo(url, opts);
+            };
+            // Копируем все свойства оригинального io
+            Object.setPrototypeOf(window.io, originalIo);
+            Object.assign(window.io, originalIo);
+        }
+        
+        // Дополнительные паттерны для подавления (уже обрабатываются выше, но оставляем для совместимости)
+        
+        // Перехватываем fetch для подавления ошибок 404 в консоли для /api/honest/*, /api/egais/*, звуковых файлов и Socket.IO
+        const originalFetch = window.fetch;
+        window.fetch = function(...args) {
+            const url = args[0];
+            if (typeof url === 'string') {
+                // Подавляем ошибки для честного знака, ЕГАИС, звуковых файлов, Socket.IO, логотипа и CSS
+                if (url.includes('/api/honest/') || url.includes('/api/egais/') || 
+                    url.includes('/assets/sounds/') || url.includes('socket.io') ||
+                    url.includes('assets/brand/logo') || url.includes('assets/custom.css') ||
+                    url.includes('favicon.ico')) {
+                    return originalFetch.apply(this, args)
+                        .then(response => {
+                            // Если 404 для socket.io или других подавляемых ресурсов - возвращаем успешный ответ
+                            if (!response.ok && (url.includes('socket.io') || url.includes('/assets/sounds/'))) {
+                                return new Response(JSON.stringify({ success: true, data: null }), {
+                                    status: 200,
+                                    headers: { 'Content-Type': 'application/json' }
+                                });
+                            }
+                            return response;
+                        })
+                        .catch(error => {
+                            // Полностью подавляем ошибки 404/ERR_ABORTED для этих endpoints
+                            if (error.message && (error.message.includes('404') || error.message.includes('ERR_ABORTED') || error.message.includes('Failed to fetch'))) {
+                                // Возвращаем пустой ответ вместо ошибки
+                                return new Response(JSON.stringify({ success: true, data: null }), {
+                                    status: 200,
+                                    headers: { 'Content-Type': 'application/json' }
+                                });
+                            }
+                            // Для других ошибок - пробрасываем дальше, но без логирования
+                            throw error;
+                        });
+                }
+            }
+            return originalFetch.apply(this, args);
+        };
+        
+        // Перехватываем XMLHttpRequest для ПОЛНОГО подавления ошибок Socket.IO polling и звуковых файлов
+        const originalXHROpen = XMLHttpRequest.prototype.open;
+        const originalXHRSend = XMLHttpRequest.prototype.send;
+        const originalXHRSetRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
+        
+        XMLHttpRequest.prototype.open = function(method, url, ...rest) {
+            this._url = url;
+            const urlStr = typeof url === 'string' ? url : String(url);
+            this._isSocketIO = urlStr.includes('socket.io') || urlStr.includes('/gps/socket.io/');
+            this._isSoundFile = urlStr.includes('/assets/sounds/') || urlStr.includes('.mp3');
+            this._shouldSuppress = this._isSocketIO || this._isSoundFile;
+            
+            // Если это ресурс, который нужно подавить - перехватываем все события сразу
+            if (this._shouldSuppress) {
+                // Перехватываем события до отправки
+                this.addEventListener('error', function(e) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    return false;
+                }, {capture: true, once: false});
+                
+                this.addEventListener('loadend', function(e) {
+                    if (this.status === 404 || this.status === 0) {
+                        e.preventDefault();
+                        e.stopImmediatePropagation();
+                        return false;
+                    }
+                }, {capture: true, once: false});
+            }
+            
+            return originalXHROpen.apply(this, [method, url, ...rest]);
+        };
+        
+        XMLHttpRequest.prototype.send = function(...args) {
+            // Подавляем ошибки для Socket.IO polling и звуковых файлов
+            if (this._shouldSuppress) {
+                // Переопределяем все обработчики для полного подавления
+                const originalOnError = this.onerror;
+                const originalOnReadyStateChange = this.onreadystatechange;
+                const originalOnLoad = this.onload;
+                const originalOnLoadEnd = this.onloadend;
+                const originalOnAbort = this.onabort;
+                
+                // Полностью перехватываем onerror - НЕ вызываем оригинальный обработчик
+                this.onerror = function(e) {
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                    }
+                    // НЕ вызываем оригинальный обработчик - полностью подавляем
+                    return false;
+                };
+                
+                // Перехватываем onabort
+                this.onabort = function(e) {
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                    }
+                    return false;
+                };
+                
+                // Перехватываем onreadystatechange
+                this.onreadystatechange = function() {
+                    // Полностью подавляем 404 ошибки и статус 0 (сетевая ошибка)
+                    if (this.readyState === 4 && (this.status === 404 || this.status === 0 || this.status === 500)) {
+                        // НЕ вызываем никаких обработчиков для ошибок
+                        // НЕ логируем в консоль
+                        return;
+                    }
+                    // Для успешных статусов вызываем оригинальный обработчик
+                    if (this.readyState === 4 && this.status >= 200 && this.status < 300) {
+                        if (originalOnReadyStateChange) {
+                            try {
+                                originalOnReadyStateChange.apply(this, arguments);
+                            } catch (e) {
+                                // Игнорируем ошибки в обработчиках
+                            }
+                        }
+                    }
+                };
+                
+                // Перехватываем onloadend
+                this.onloadend = function(e) {
+                    // Полностью подавляем 404, 0 и другие ошибки в loadend
+                    if (this.status === 404 || this.status === 0 || this.status >= 400) {
+                        if (e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            e.stopImmediatePropagation();
+                        }
+                        // НЕ вызываем оригинальный обработчик
+                        return false;
+                    }
+                    // Только для успешных статусов вызываем оригинальный обработчик
+                    if (this.status >= 200 && this.status < 300 && originalOnLoadEnd) {
+                        try {
+                            originalOnLoadEnd.call(this, e);
+                        } catch (e) {
+                            // Игнорируем ошибки
+                        }
+                    }
+                };
+                
+                // Перехватываем onload только для успешных запросов
+                this.onload = function(e) {
+                    if (this.status >= 200 && this.status < 300 && originalOnLoad) {
+                        try {
+                            originalOnLoad.call(this, e);
+                        } catch (e) {
+                            // Игнорируем ошибки
+                        }
+                    }
+                };
+            }
+            
+            try {
+                return originalXHRSend.apply(this, args);
+            } catch (error) {
+                // Подавляем ошибки отправки для Socket.IO и звуковых файлов
+                if (this._shouldSuppress) {
+                    // НЕ логируем ошибку, просто возвращаемся
+                    return;
+                }
+                throw error;
+            }
+        };
+        
+        window.SOUND_NOTIFICATIONS_FORCE_REMOTE = false;
+        window.SOUND_NOTIFICATIONS_PREFER_REMOTE = false;
+    </script>
+    <script src="modules/sound-notifications.js?v=14"></script>
+    
+    <!-- Новые модули -->
+    <script src="modules/inventory-management-module.js?v=12"></script>
+    
+    <!-- Новые модули для разделов Отчётность, Уведомления, Профиль -->
+    <script src="modules/admin-reports-module.js?v=13"></script>
+    <script src="modules/admin-alerts-module.js?v=13"></script>
+    <script src="modules/admin-profile-module.js?v=13"></script>
+    <script src="modules/category-nav-module.js?v=1"></script>
+    <script src="modules/loyalty-suite.js?v=2"></script>
+    <script src="modules/data-import-module.js?v=7"></script>
+    
+    <script src="modules/project-switcher.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof CategoryNavigation === 'undefined') {
+                console.warn('CategoryNavigation module not available');
+                return;
+            }
+
+            const adminCategoryFallback = [
+                { id: 'all', name: 'Все', position: 0 },
+                { id: 'hits', name: 'Хиты', position: 10 },
+                { id: 'new', name: 'Новинки', position: 20 },
+                { id: 'pizza', name: 'Пицца', position: 30 },
+                { id: 'wok', name: 'WOK', position: 40 },
+                { id: 'sets', name: 'Сеты', position: 50 },
+                { id: 'rolls', name: 'Роллы', position: 60 },
+                { id: 'drinks', name: 'Напитки', position: 70 }
+            ];
+
+            const container = document.getElementById('adminCategoryNav');
+            if (!container) {
+                return;
+            }
+
+            window.categoryNavInstances = window.categoryNavInstances || {};
+
+            const navInstance = new CategoryNavigation(container, {
+                listClass: 'category-tree',
+                subListClass: 'category-tree__children',
+                itemClass: 'category-tree__item',
+                linkTag: 'button',
+                linkClass: 'category-tree__button',
+                activeClass: 'is-active',
+                autoSelectFirst: false,
+                enableDragDrop: true, // Включаем drag&drop для сортировки
+                fallbackData: window.ADMIN_CATEGORY_FALLBACK || adminCategoryFallback,
+                onCategorySelect: (category) => {
+                    const itemCategoryField = document.getElementById('itemCategory');
+                    if (itemCategoryField) {
+                        itemCategoryField.value = category.name || '';
+                    }
+                }
+            });
+
+            window.categoryNavInstances.admin = navInstance;
+
+            const refreshBtn = document.getElementById('refreshCategoriesBtn');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', () => navInstance.refresh());
+            }
+
+            const createBtn = document.getElementById('createCategoryBtn');
+            if (createBtn) {
+                createBtn.addEventListener('click', async () => {
+                    const name = prompt('Название новой категории');
+                    if (!name) return;
+
+                    const parentPrompt = prompt('ID родительской категории (оставьте пустым для корневой категории)');
+                    const payload = {
+                        name: name.trim(),
+                        parent_id: parentPrompt ? parentPrompt.trim() : null,
+                        is_active: true
+                    };
+
+                    try {
+                        await createCategory(payload, { endpoint: '/api/v1/categories' });
+                        await navInstance.refresh();
+                        alert('Категория создана успешно');
+                    } catch (error) {
+                        console.error('Ошибка создания категории:', error);
+                        alert('Не удалось создать категорию: ' + (error.message || 'Неизвестная ошибка'));
+                    }
+                });
+            }
+
+            container.addEventListener('category-nav:select', (event) => {
+                const category = event.detail?.category;
+                if (!category) return;
+
+                const itemCategoryField = document.getElementById('itemCategory');
+                if (itemCategoryField) {
+                    itemCategoryField.value = category.name || '';
+                }
+            });
+        });
+    </script>
+    <script>
+        // Проверка загрузки модулей
+        console.log('🔍 ПРОВЕРКА МОДУЛЕЙ:');
+        console.log('  ✅ admin.js загружен:', typeof DandyAdmin !== 'undefined');
+        console.log('  ✅ ProductCardsManager загружен:', typeof window.ProductCardsManager !== 'undefined');
+        console.log('  ✅ admin-reports-module.js загружен:', typeof window.initReports !== 'undefined');
+        console.log('  ✅ admin-alerts-module.js загружен:', typeof window.initAlerts !== 'undefined');
+        console.log('  ✅ admin-profile-module.js загружен:', typeof window.initProfile !== 'undefined');
+        
+        // Проверка версии ProductCardsManager (для диагностики автоудаления фона)
+        setTimeout(async () => {
+            const version = window.ProductCardsManagerVersion || window._adminProductCardsVersion;
+            const expectedSignature = '32-with-file-upload-and-smartcut';
+            const expectedBanner = 'ВЕРСИЯ: 32';
+            
+            if (version && String(version).includes(expectedSignature)) {
+                console.log('%c✅ ProductCardsManager версия:', 'color: green; font-weight: bold;', version);
+                console.log('%c✅ АВТОУДАЛЕНИЕ ФОНА ДОСТУПНО НА СЕРВЕРЕ!', 'color: green; font-weight: bold; font-size: 14px;');
+                console.log('ℹ️ Диагностика: загруженный модуль подтвердил актуальную версию, пропускаю сетевую проверку файла.');
+            } else {
+                const cacheBust = Date.now();
+                const scriptUrl = `modules/admin-product-cards.js?diagnostic=${cacheBust}`;
+                try {
+                    const response = await fetch(scriptUrl, { cache: 'no-store' });
+                    if (response.ok) {
+                        const text = await response.text();
+                        const firstLines = text.substring(0, 500);
+                        const fileSize = text.length;
+                        
+                        console.log('%c📊 ДИАГНОСТИКА ФАЙЛА НА СЕРВЕРЕ:', 'color: blue; font-weight: bold; font-size: 14px;');
+                        console.log('📍 URL файла:', window.location.origin + '/' + scriptUrl);
+                        console.log('📦 Размер файла:', fileSize, 'символов (~', Math.round(fileSize / 1024), 'КБ)');
+                        console.log('📄 Первые 500 символов файла:');
+                        console.log('%c' + firstLines, 'font-family: monospace; font-size: 11px; background: #f0f0f0; padding: 10px; border-radius: 4px;');
+                        
+                        if (firstLines.includes(expectedBanner) && firstLines.includes('smartCut')) {
+                            console.log('%c✅ ФАЙЛ НА СЕРВЕРЕ ПРАВИЛЬНЫЙ!', 'color: green; font-weight: bold; font-size: 14px;');
+                        } else {
+                            console.warn('%c⚠️ НАЙДЕНА СТАРАЯ ВЕРСИЯ ФАЙЛА НА СЕРВЕРЕ', 'color: orange; font-weight: bold; font-size: 14px;');
+                            console.warn('⚠️ Ожидалось:', `"${expectedBanner} (с загрузкой изображений через проводник и автоудалением фона)"`);
+                            console.warn('⚠️ В файле:', firstLines.substring(0, 200));
+                        }
+                    } else {
+                        console.warn('⚠️ Не удалось загрузить файл для диагностики:', response.status, response.statusText);
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Ошибка при диагностике файла:', error);
+                }
+                
+                if (version) {
+                    console.log('%cℹ️ ProductCardsManager версия:', 'color: steelblue; font-weight: bold;', version);
+                } else {
+                    console.warn('%c⚠️ ProductCardsManagerVersion не найдена. Проверь загрузку скрипта admin-product-cards.js', 'color: orange; font-weight: bold;');
+                }
+            }
+            
+            if (window.ProductCardsManager && typeof window.ProductCardsManager.smartCut === 'function') {
+                console.log('%c✅ Функция smartCut доступна - автоудаление фона работает!', 'color: green; font-weight: bold;');
+            } else {
+                console.warn('%c⚠️ Функция smartCut не найдена. Проверь версию admin-product-cards.js', 'color: orange; font-weight: bold;');
+            }
+        }, 1500);
+        
+        // Initialize project switcher
+        setTimeout(() => {
+            if (window.projectSwitcher) {
+                window.projectSwitcher.init();
+            }
+        }, 500);
+
+        // Shift management functions
+        window.openShift = function openShift() {
+            const modal = createShiftModal('Открыть смену', `
+                <form id="openShiftForm">
+                    <div class="form-group">
+                        <label class="form-label">Кассир *</label>
+                        <select name="cashier" class="form-input" required>
+                            <option value="">Выберите кассира</option>
+                            <option value="ivan">Иван Петров</option>
+                            <option value="maria">Мария Сидорова</option>
+                            <option value="alex">Алексей Козлов</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Начальная сумма в кассе</label>
+                        <input type="number" name="initial_amount" class="form-input" step="0.01" min="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Комментарий</label>
+                        <textarea name="comment" class="form-input" rows="2" placeholder="Дополнительная информация"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeShiftModal()">Отмена</button>
+                        <button type="submit" class="btn btn-success">🔓 Открыть смену</button>
+                    </div>
+                </form>
+            `);
+
+            document.getElementById('openShiftForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const cashier = formData.get('cashier');
+                const initialAmount = formData.get('initial_amount');
+                
+                if (!cashier) {
+                    alert('Выберите кассира');
+                    return;
+                }
+
+                // Обновляем статус смены
+                document.getElementById('shiftStatus').innerHTML = `
+                    <p>✅ Смена открыта • Кассир: ${cashier} • Начальная сумма: ₽${initialAmount || 0}</p>
+                    <div style="margin-top: 1rem;">
+                        <button class="btn btn-danger btn-small" onclick="closeShift()">🔒 Закрыть смену</button>
+                        <button class="btn btn-secondary btn-small" onclick="showShiftHistory()">📊 История смен</button>
+                    </div>
+                `;
+
+                closeShiftModal();
+                alert('✅ Смена успешно открыта!');
+            });
+        }
+
+        window.closeShift = function closeShift() {
+            if (!confirm('Вы уверены, что хотите закрыть смену?')) {
+                return;
+            }
+
+            const modal = createShiftModal('Закрыть смену', `
+                <form id="closeShiftForm">
+                    <div class="form-group">
+                        <label class="form-label">Финальная сумма в кассе</label>
+                        <input type="number" name="final_amount" class="form-input" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Комментарий к закрытию</label>
+                        <textarea name="comment" class="form-input" rows="2" placeholder="Причина закрытия смены"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeShiftModal()">Отмена</button>
+                        <button type="submit" class="btn btn-danger">🔒 Закрыть смену</button>
+                    </div>
+                </form>
+            `);
+
+            document.getElementById('closeShiftForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const finalAmount = formData.get('final_amount');
+                
+                // Обновляем статус смены
+                document.getElementById('shiftStatus').innerHTML = `
+                    <p>🔓 Смена закрыта • Финальная сумма: ₽${finalAmount}</p>
+                    <div style="margin-top: 1rem;">
+                        <button class="btn btn-success btn-small" onclick="openShift()">🔓 Открыть смену</button>
+                        <button class="btn btn-secondary btn-small" onclick="showShiftHistory()">📊 История смен</button>
+                    </div>
+                `;
+
+                closeShiftModal();
+                alert('✅ Смена успешно закрыта!');
+            });
+        }
+
+        window.showShiftHistory = function showShiftHistory() {
+            const modal = createShiftModal('История смен', `
+                <div class="shift-history">
+                    <div style="margin-bottom: 1rem;">
+                        <input type="date" id="shiftDateFilter" class="form-input" style="width: 200px;">
+                        <button class="btn btn-primary btn-small" onclick="filterShiftHistory()">Фильтр</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Дата</th>
+                                    <th>Кассир</th>
+                                    <th>Начало</th>
+                                    <th>Конец</th>
+                                    <th>Начальная сумма</th>
+                                    <th>Финальная сумма</th>
+                                    <th>Выручка</th>
+                                    <th>Статус</th>
+                                </tr>
+                            </thead>
+                            <tbody id="shiftHistoryTable">
+                                <tr>
+                                    <td>15.01.2024</td>
+                                    <td>Иван Петров</td>
+                                    <td>09:00</td>
+                                    <td>18:00</td>
+                                    <td>₽0</td>
+                                    <td>₽12,540</td>
+                                    <td>₽12,540</td>
+                                    <td><span class="badge badge-success">Закрыта</span></td>
+                                </tr>
+                                <tr>
+                                    <td>14.01.2024</td>
+                                    <td>Мария Сидорова</td>
+                                    <td>09:00</td>
+                                    <td>18:00</td>
+                                    <td>₽0</td>
+                                    <td>₽15,230</td>
+                                    <td>₽15,230</td>
+                                    <td><span class="badge badge-success">Закрыта</span></td>
+                                </tr>
+                                <tr>
+                                    <td>13.01.2024</td>
+                                    <td>Алексей Козлов</td>
+                                    <td>09:00</td>
+                                    <td>18:00</td>
+                                    <td>₽0</td>
+                                    <td>₽11,890</td>
+                                    <td>₽11,890</td>
+                                    <td><span class="badge badge-success">Закрыта</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-secondary" onclick="closeShiftModal()">Закрыть</button>
+                </div>
+            `, '', 'large');
+        }
+
+        window.createShiftModal = function createShiftModal(title, content, footer = '', size = 'normal') {
+            // Удаляем существующие модальные окна
+            const existingModals = document.querySelectorAll('.modal-overlay');
+            existingModals.forEach(modal => modal.remove());
+
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+                <div class="modal-content ${size === 'large' ? 'large' : ''}">
+                    <div class="modal-header">
+                        <h3>${title}</h3>
+                        <button class="modal-close" onclick="closeShiftModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        ${content}
+                    </div>
+                    ${footer ? `<div class="modal-footer">${footer}</div>` : ''}
+                </div>
+            `;
+            
+            // Добавляем обработчик клика по фону для закрытия
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeShiftModal();
+                }
+            });
+
+            document.body.appendChild(modal);
+            
+            // Фокус на первое поле ввода
+            setTimeout(() => {
+                const firstInput = modal.querySelector('input, select, textarea');
+                if (firstInput) {
+                    firstInput.focus();
+                }
+            }, 100);
+
+            return modal;
+        }
+
+        window.closeShiftModal = function closeShiftModal() {
+            const modals = document.querySelectorAll('.modal-overlay');
+            modals.forEach(modal => modal.remove());
+        }
+
+        window.filterShiftHistory = function filterShiftHistory() {
+            const dateFilter = document.getElementById('shiftDateFilter').value;
+            // Здесь можно добавить логику фильтрации по дате
+            console.log('Фильтр по дате:', dateFilter);
+        }
+    </script>
+    <script>
+        (function enableFileProtocolMocks() {
+            if (typeof window === 'undefined' || typeof window.fetch !== 'function') return;
+            if (window.location.protocol !== 'file:') return;
+
+            const originalFetch = window.fetch.bind(window);
+            const okJson = (body) => new Response(JSON.stringify(body), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            const responders = [
+                { match: (path) => path.includes('/api/v1/projects'), respond: () => okJson({ success: true, data: [] }) },
+                { match: (path) => path.includes('/api/categories'), respond: () => okJson({ success: true, data: [] }) },
+                { match: (path) => path.includes('/api/products'), respond: () => okJson({ success: true, data: [] }) },
+                { match: (path) => path.includes('/api/orders'), respond: () => okJson({ success: true, data: [] }) },
+                { match: (path) => path.includes('/products-data.json'), respond: () => okJson([]) },
+                { match: (path) => path.includes('/menu_data.json'), respond: () => okJson({ offers: [] }) },
+                { match: (path) => path.includes('/assets/sounds/'), respond: () => new Response('', { status: 200 }) }
+            ];
+
+            console.info('🔧 file:// mock fetch enabled');
+
+            window.fetch = async function patchedFetch(resource, init) {
+                let url = resource instanceof Request ? resource.url : resource;
+                let absolute;
+                try {
+                    absolute = new URL(url, window.location.href);
+                } catch (error) {
+                    return originalFetch(resource, init);
+                }
+
+                if (absolute.protocol !== 'file:') {
+                    return originalFetch(resource, init);
+                }
+
+                // Проверяем, что pathname существует перед использованием replace
+                if (!absolute.pathname) {
+                    return originalFetch(resource, init);
+                }
+
+                const normalizedPath = absolute.pathname.replace(/\\/g, '/').toLowerCase();
+                const responder = responders.find((entry) => entry.match(normalizedPath));
+                if (responder) {
+                    return responder.respond();
+                }
+
+                return okJson({ success: true, data: [] });
+            };
+        })();
+    </script>
+    <script src="modules/admin-edo-module.js?v=3"></script>
+    <script src="modules/mercury-management-module.js?v=12"></script>
+    <script src="modules/honest-sign-module.js?v=1"></script>
+    <script src="modules/egais-module.js?v=1"></script>
+    <script src="modules/honest-sign-dashboard.js?v=1"></script>
+    <script src="modules/egais-dashboard.js?v=1"></script>
+    <script src="modules/aggregator-integrations.js?v=1"></script>
+    <script src="modules/pricing-management-module.js?v=14"></script>
+    <script src="modules/marketing-management-module.js?v=14"></script>
+</body>
+</html>

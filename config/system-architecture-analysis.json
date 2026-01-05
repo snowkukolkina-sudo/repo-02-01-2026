@@ -1,0 +1,75 @@
+{
+  "analysisConfig": {
+    "projectName": "repo-02-01-2026",
+    "version": "1.0.0",
+    "timestamp": "${ANALYSIS_TIMESTAMP}",
+    "enabled": true
+  },
+  "aiAnalysisRequests": [
+    {
+      "id": "architecture-analysis-chatgpt",
+      "connector": "chatgpt",
+      "type": "architecture-analysis",
+      "status": "pending",
+      "priority": "high",
+      "scope": {
+        "codebase": true,
+        "dependencies": true,
+        "modules": true,
+        "dataFlow": true,
+        "securityAnalysis": true
+      },
+      "outputFormats": ["markdown", "json"],
+      "description": "Comprehensive architecture analysis and mapping"
+    },
+    {
+      "id": "architecture-analysis-claude",
+      "connector": "claude",
+      "type": "architecture-analysis",
+      "status": "pending",
+      "priority": "high",
+      "scope": {
+        "codebase": true,
+        "dependencies": true,
+        "modules": true,
+        "dataFlow": true,
+        "securityAnalysis": true
+      },
+      "outputFormats": ["markdown", "json"],
+      "description": "Deep code analysis and architecture review"
+    },
+    {
+      "id": "architecture-analysis-perplexity",
+      "connector": "perplexity",
+      "type": "architecture-analysis",
+      "status": "pending",
+      "priority": "high",
+      "scope": {
+        "codebase": true,
+        "dependencies": true,
+        "modules": true,
+        "dataFlow": true,
+        "bestPractices": true
+      },
+      "outputFormats": ["markdown", "json"],
+      "description": "System architecture analysis with best practices review"
+    }
+  ],
+  "architectureMap": {
+    "generateDiagrams": true,
+    "formats": ["mermaid", "ascii"],
+    "includeComponents": [
+      "api",
+      "database",
+      "frontend",
+      "backend",
+      "services",
+      "utilities"
+    ]
+  },
+  "reportGeneration": {
+    "enabled": true,
+    "outputPath": "docs/architecture",
+    "formats": ["html", "markdown", "pdf"]
+  }
+}

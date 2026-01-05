@@ -1,0 +1,116 @@
+{
+  "branchManagement": {
+    "enabled": true,
+    "strategy": "feature-branch-per-change",
+    "description": "AI creates isolated branches for each change with automatic naming and rollback capability"
+  },
+  "branchNamingRules": {
+    "pattern": "ai-{module}-{date}-{time}-{hash}",
+    "examples": [
+      "ai-database-20260105-210530-abc123",
+      "ai-api-20260105-210600-def456",
+      "ai-frontend-20260105-210615-ghi789"
+    ],
+    "components": {
+      "prefix": "ai",
+      "module": "[database|api|frontend|backend|services|utils|config|docs]",
+      "date": "YYYYMMDD",
+      "time": "HHMMSS",
+      "hash": "6-char-unique-hash"
+    },
+    "convention": "kebab-case with timestamps for tracking and easy rollback"
+  },
+  "changeTracking": {
+    "enabled": true,
+    "logChanges": true,
+    "changeLog": "docs/ai-changes-log.md",
+    "trackingFields": {
+      "branchName": "auto-generated with module and timestamp",
+      "createdBy": "AI connector ID (chatgpt|claude|perplexity)",
+      "createdAt": "ISO 8601 timestamp",
+      "moduleAffected": "Which module was modified",
+      "changeType": "fix|feature|refactor|docs|test",
+      "filesChanged": "List of modified files",
+      "description": "Summary of changes made",
+      "rollbackCommand": "git reset --hard <commit-hash>"
+    }
+  },
+  "pullRequestRules": {
+    "enabled": true,
+    "autoCreatePR": true,
+    "prTemplate": {
+      "title": "[AI] {module} - {changeType} ({timestamp})",
+      "exampleTitle": "[AI] database - fix (2026-01-05 21:05:30)",
+      "description": "Automated PR created by AI connector",
+      "labels": ["ai-generated", "auto-review", "module-{name}"],
+      "reviewers": "@snowkukolkina-sudo",
+      "assignees": "@snowkukolkina-sudo"
+    }
+  },
+  "rollbackMechanism": {
+    "enabled": true,
+    "strategy": "branch-based-revert",
+    "procedures": {
+      "instant": "git checkout main && git pull",
+      "byBranch": "git checkout {original-branch}",
+      "byCommit": "git revert {commit-hash}",
+      "fullReset": "git reset --hard {safe-commit}"
+    },
+    "documentation": "All changes are in isolated branches, allowing instant revert by switching branch or using git commands"
+  },
+  "permissions": {
+    "canCreateBranch": true,
+    "canCreatePullRequest": true,
+    "canCommit": true,
+    "canWriteToMain": false,
+    "requireReview": true,
+    "requireApproval": true,
+    "branchProtection": {
+      "main": "Required PR review before merge",
+      "develop": "At least 1 review required",
+      "aiFeatures/*": "All AI changes isolated to feature branches"
+    }
+  },
+  "safetyFeatures": {
+    "atomicCommits": true,
+    "commitMessageTemplate": "[AI-{connector}] {module}: {changeType} - {description} (Timestamp: {ISO-8601})",
+    "changeValidation": true,
+    "syntaxCheckBeforeCommit": true,
+    "rollbackTimeframe": "Unlimited - all branches preserved for full history",
+    "archiveOldBranches": true,
+    "archiveAfterDays": 30,
+    "archiveLocation": "archive/{date}/{branch-name}"
+  },
+  "connectorPermissions": {
+    "chatgpt": {
+      "canCreateBranches": true,
+      "canCreatePR": true,
+      "canCommit": true,
+      "maxFilesPerCommit": 50,
+      "requiresReview": true
+    },
+    "claude": {
+      "canCreateBranches": true,
+      "canCreatePR": true,
+      "canCommit": true,
+      "maxFilesPerCommit": 50,
+      "requiresReview": true
+    },
+    "perplexity": {
+      "canCreateBranches": true,
+      "canCreatePR": true,
+      "canCommit": true,
+      "maxFilesPerCommit": 50,
+      "requiresReview": true
+    }
+  },
+  "exampleWorkflow": {
+    "step1": "AI detects error/improvement in database module",
+    "step2": "AI creates branch: ai-database-20260105-210530-abc123",
+    "step3": "AI makes fixes and commits with timestamp",
+    "step4": "AI creates PR with full description and rollback info",
+    "step5": "You review changes in the PR",
+    "step6": "If approved: merge to main. If rejected: delete branch (automatic rollback)",
+    "step7": "If problems later: git checkout ai-database-20260105-210530-abc123 to revert"
+  }
+}

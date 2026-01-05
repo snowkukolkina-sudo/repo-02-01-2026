@@ -1,0 +1,74 @@
+{
+  "connectors": [
+    {
+      "id": "chatgpt",
+      "name": "ChatGPT",
+      "type": "ai-model",
+      "provider": "OpenAI",
+      "enabled": true,
+      "apiVersion": "gpt-4",
+      "repositoryAccess": {
+        "enabled": true,
+        "permissions": ["read", "analyze", "comment"],
+        "repoUrl": "https://github.com/snowkukolkina-sudo/repo-02-01-2026",
+        "accessToken": "${CHATGPT_GITHUB_TOKEN}",
+        "scope": ["code", "issues", "pull_requests", "wiki"]
+      },
+      "capabilities": {
+        "codeAnalysis": true,
+        "architectureReview": true,
+        "systemMapping": true,
+        "documentation": true
+      }
+    },
+    {
+      "id": "claude",
+      "name": "Claude",
+      "type": "ai-model",
+      "provider": "Anthropic",
+      "enabled": true,
+      "apiVersion": "claude-3-opus",
+      "repositoryAccess": {
+        "enabled": true,
+        "permissions": ["read", "analyze", "comment"],
+        "repoUrl": "https://github.com/snowkukolkina-sudo/repo-02-01-2026",
+        "accessToken": "${CLAUDE_GITHUB_TOKEN}",
+        "scope": ["code", "issues", "pull_requests", "wiki"]
+      },
+      "capabilities": {
+        "codeAnalysis": true,
+        "architectureReview": true,
+        "systemMapping": true,
+        "documentation": true
+      }
+    },
+    {
+      "id": "perplexity",
+      "name": "Perplexity",
+      "type": "ai-model",
+      "provider": "Perplexity AI",
+      "enabled": true,
+      "apiVersion": "pplx-latest",
+      "repositoryAccess": {
+        "enabled": true,
+        "permissions": ["read", "analyze", "comment"],
+        "repoUrl": "https://github.com/snowkukolkina-sudo/repo-02-01-2026",
+        "accessToken": "${PERPLEXITY_GITHUB_TOKEN}",
+        "scope": ["code", "issues", "pull_requests", "wiki"]
+      },
+      "capabilities": {
+        "codeAnalysis": true,
+        "architectureReview": true,
+        "systemMapping": true,
+        "documentation": true
+      }
+    }
+  ],
+  "defaultConnector": "chatgpt",
+  "systemArchitecture": {
+    "enabled": true,
+    "analysisLevel": "comprehensive",
+    "mapGeneration": true,
+    "outputFormat": ["json", "mermaid", "markdown"]
+  }
+}

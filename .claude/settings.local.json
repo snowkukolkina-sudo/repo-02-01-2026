@@ -12,7 +12,11 @@
       "Bash(\"$USERPROFILE/AppData/Roaming/Claude/claude-code/2.0.72/claude.exe\" mcp add --transport stdio --scope local context7 -- cmd /c npx -y @upstash/context7-mcp)",
       "Bash(\"$USERPROFILE/AppData/Roaming/Claude/claude-code/2.0.72/claude.exe\" mcp add --transport stdio --scope local playwright -- cmd /c npx -y @playwright/mcp@latest)",
       "Bash(sqlite3:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(git checkout:*)",
+      "Bash(git reset:*)",
+      "Bash(git pull:*)",
+      "Bash(git merge:*)"
     ]
   }
 }

@@ -1,0 +1,28 @@
+name: Auto Deploy to Server
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🚀 Выполнение деплоя на сервере
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          script: |
+            cd /var/www/testdandypizza
+
+            echo "🔄 Запуск скрипта деплоя..."
+            bash deploy.sh
+
+            echo "✅ Деплой завершён успешно!"

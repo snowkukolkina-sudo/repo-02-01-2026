@@ -4,7 +4,15 @@
       "Bash(git init:*)",
       "Bash(git remote add:*)",
       "Bash(git add:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(where:*)",
+      "Bash(claude mcp add --transport stdio --scope local context7 -- cmd /c npx -y @upstash/context7-mcp)",
+      "Bash(\"$USERPROFILE/AppData/Roaming/Claude/claude-code/2.0.72/claude.exe\" mcp add --transport stdio --scope local context7 -- cmd /c npx -y @upstash/context7-mcp)",
+      "Bash(\"$USERPROFILE/AppData/Roaming/Claude/claude-code/2.0.72/claude.exe\" mcp add --transport stdio --scope local playwright -- cmd /c npx -y @playwright/mcp@latest)",
+      "Bash(sqlite3:*)",
+      "Bash(wc:*)"
     ]
   }
 }

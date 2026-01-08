@@ -6310,12 +6310,34 @@
                 }
                 
                 // Send file to server
-                const response = await fetch('/api/importProducts', {
-                    method: 'POST',
-                    body: formData
-                });
+                const importEndpoints = ['/api/importProducts', '/api/catalog/products/import'];
+                let response;
+                let lastError;
+                for (const endpoint of importEndpoints) {
+                    try {
+                        response = await fetch(endpoint, {
+                            method: 'POST',
+                            body: formData
+                        });
+                    } catch (error) {
+                        lastError = error;
+                        continue;
+                    }
+                    if (response.ok || response.status !== 404) {
+                        break;
+                    }
+                }
                 
-                const result = await response.json();
+                if (!response) {
+                    throw lastError || new Error('Import request failed');
+                }
+                
+                let result;
+                try {
+                    result = await response.json();
+                } catch (error) {
+                    throw new Error('Invalid import response');
+                }
                 
                 if (!response.ok || !result.success) {
                     throw new Error(result.message || result.error || 'Ошибка импорта');

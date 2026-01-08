@@ -320,6 +320,169 @@ sqlite3 database.sqlite "SELECT * FROM users;"
 
 ---
 
+## MCP Серверы (Model Context Protocol)
+
+### Что такое MCP?
+
+Model Context Protocol (MCP) - это открытый стандарт от Anthropic для интеграции AI-систем с внешними инструментами и источниками данных. MCP позволяет Claude Code подключаться к различным сервисам и расширять свои возможности.
+
+### Установленные MCP серверы
+
+Для этого проекта настроены следующие MCP серверы:
+
+#### 1. **Context7** (@upstash/context7-mcp)
+
+**Назначение:** Предоставляет актуальную, версионно-специфичную документацию библиотек прямо в контекст AI.
+
+**Возможности:**
+- Динамическое получение официальной документации библиотек
+- Актуальные примеры кода без устаревшей информации
+- Версионно-специфичная документация
+- Поддержка множества популярных библиотек
+
+**Как использовать:**
+Просто упомяните "use context7" в запросе к Claude, и сервер автоматически подгрузит актуальную документацию.
+
+```
+Пример: "use context7 покажи как использовать React hooks в версии 18"
+```
+
+**Ресурсы:**
+- Документация: https://mcpmarket.com/server/context7-http
+- GitHub: https://github.com/upstash/context7-mcp
+
+#### 2. **Playwright** (@playwright/mcp@latest)
+
+**Назначение:** Автоматизация браузера для тестирования и веб-скрапинга.
+
+**Возможности:**
+- Автоматизация действий в браузере (клики, ввод текста, навигация)
+- Создание скриншотов веб-страниц
+- Тестирование веб-приложений
+- Заполнение форм и взаимодействие с элементами
+- Поддержка Chromium, Firefox, WebKit
+
+**Как использовать:**
+Просто попросите Claude выполнить действия в браузере:
+
+```
+Примеры:
+- "Сделай скриншот главной страницы"
+- "Протестируй процесс входа с test@example.com"
+- "Проверь, правильно ли работает корзина на сайте"
+```
+
+**Ресурсы:**
+- Документация: https://playwright.dev/
+- MCP сервер: https://github.com/microsoft/playwright
+
+### Конфигурация MCP
+
+MCP серверы настроены в файле `~/.claude.json` для локального проекта:
+
+```json
+{
+  "mcpServers": {
+    "context7": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": ["C:/", "npx", "-y", "@upstash/context7-mcp"],
+      "env": {}
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": ["C:/", "npx", "-y", "@playwright/mcp@latest"],
+      "env": {}
+    }
+  }
+}
+```
+
+### Управление MCP серверами
+
+#### Просмотр установленных серверов:
+```bash
+claude mcp list
+```
+
+#### Получение информации о сервере:
+```bash
+claude mcp get context7
+claude mcp get playwright
+```
+
+#### Добавление нового MCP сервера:
+```bash
+# Для Windows (обязательно используйте cmd /c для npx)
+claude mcp add --transport stdio --scope local имя_сервера -- cmd /c npx -y пакет
+
+# Пример:
+claude mcp add --transport stdio --scope local github -- cmd /c npx -y @modelcontextprotocol/server-github
+```
+
+#### Удаление MCP сервера:
+```bash
+claude mcp remove имя_сервера
+```
+
+#### Проверка статуса в Claude Code:
+```bash
+/mcp
+```
+
+### Области видимости (Scope)
+
+MCP серверы можно устанавливать в разных областях:
+
+- **local** - только для текущего проекта (в `~/.claude.json`)
+- **project** - для всей команды (в `.mcp.json` в корне проекта, коммитится в Git)
+- **user** - для всех проектов пользователя
+
+**Рекомендация:** Используйте `--scope local` для личной разработки, `--scope project` для командной работы.
+
+### Популярные MCP серверы
+
+Помимо установленных, вы можете добавить:
+
+- **GitHub** - работа с репозиториями, issues, PR
+- **Filesystem** - расширенная работа с файловой системой
+- **PostgreSQL** - прямые запросы к базе данных
+- **Brave Search** - поиск в интернете
+- **Sentry** - мониторинг ошибок
+- **Slack** - интеграция с командным чатом
+
+Реестр MCP серверов: https://github.com/modelcontextprotocol/servers
+
+### Особенности для Windows
+
+**ВАЖНО:** При установке MCP серверов на Windows необходимо использовать обёртку `cmd /c` для команд `npx`:
+
+```bash
+# Правильно (Windows):
+claude mcp add --transport stdio --scope local server -- cmd /c npx -y package
+
+# Неправильно (вызовет ошибку "Connection closed"):
+claude mcp add --transport stdio --scope local server -- npx -y package
+```
+
+### Устранение проблем
+
+**Проблема:** "Connection closed" при запуске MCP сервера
+**Решение:** Убедитесь, что используете `cmd /c` перед `npx` на Windows
+
+**Проблема:** Медленная инициализация сервера
+**Решение:** Увеличьте таймаут:
+```bash
+set MCP_TIMEOUT=10000
+claude
+```
+
+**Проблема:** Сервер не отображается в списке
+**Решение:** Проверьте синтаксис конфигурации в `~/.claude.json`
+
+---
+
 ## Ресурсы и документация
 
 **Внутренняя документация:**
@@ -330,6 +493,12 @@ sqlite3 database.sqlite "SELECT * FROM users;"
 - `/config/ai-connectors.json` - настройка AI
 - `/config/ai-branch-management.json` - управление ветками
 - `/config/system-architecture-analysis.json` - анализ архитектуры
+
+**MCP серверы:**
+- Context7: https://mcpmarket.com/server/context7-http
+- Playwright: https://playwright.dev/
+- MCP Registry: https://github.com/modelcontextprotocol/servers
+- Claude Code MCP Docs: https://code.claude.com/docs/en/mcp.md
 
 ---
 

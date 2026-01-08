@@ -80,7 +80,14 @@
             
             // Перехватываем console.error ДО всего остального
             console.error = function(...args) {
-                const msg = args.join(' ');
+                // Проверяем как текст, так и объекты ошибок
+                const msg = args.map(arg => {
+                    if (arg instanceof Error) {
+                        return arg.toString() + ' ' + (arg.message || '') + ' ' + (arg.stack || '');
+                    }
+                    return String(arg);
+                }).join(' ');
+
                 if (shouldSuppress(msg)) {
                     return; // Полностью подавляем
                 }
@@ -89,7 +96,14 @@
             
             // Перехватываем console.warn ДО всего остального
             console.warn = function(...args) {
-                const msg = args.join(' ');
+                // Проверяем как текст, так и объекты ошибок
+                const msg = args.map(arg => {
+                    if (arg instanceof Error) {
+                        return arg.toString() + ' ' + (arg.message || '') + ' ' + (arg.stack || '');
+                    }
+                    return String(arg);
+                }).join(' ');
+
                 if (shouldSuppress(msg)) {
                     return; // Полностью подавляем
                 }
@@ -4108,7 +4122,14 @@
             // Перехватываем console.error
             const originalConsoleError = console.error;
             console.error = function(...args) {
-                const message = args.join(' ');
+                // Проверяем как текст, так и объекты ошибок
+                const message = args.map(arg => {
+                    if (arg instanceof Error) {
+                        return arg.toString() + ' ' + (arg.message || '') + ' ' + (arg.stack || '');
+                    }
+                    return String(arg);
+                }).join(' ');
+
                 if (shouldSuppress(message)) {
                     return; // Полностью подавляем
                 }
@@ -4118,7 +4139,14 @@
             // Перехватываем console.warn
             const originalConsoleWarn = console.warn;
             console.warn = function(...args) {
-                const message = args.join(' ');
+                // Проверяем как текст, так и объекты ошибок
+                const message = args.map(arg => {
+                    if (arg instanceof Error) {
+                        return arg.toString() + ' ' + (arg.message || '') + ' ' + (arg.stack || '');
+                    }
+                    return String(arg);
+                }).join(' ');
+
                 if (shouldSuppress(message)) {
                     return; // Полностью подавляем
                 }

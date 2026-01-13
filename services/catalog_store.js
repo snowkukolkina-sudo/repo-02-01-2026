@@ -991,6 +991,16 @@ function mapProductPayload(payload = {}, { existing } = {}) {
 
     const product = {
         ...base,
+        display_only: Boolean(payload.display_only ?? base.display_only ?? false),
+        parent_id: payload.parent_id ?? base.parent_id ?? null,
+        size_label: sanitizeString(payload.size_label || base.size_label || '', { max: 50 }) || null,
+        diameter: payload.diameter !== undefined
+            ? parseNumber(payload.diameter, { default: null, min: 0 })
+            : (base.diameter ?? null),
+        recipe_coefficient: payload.recipe_coefficient !== undefined
+            ? parseNumber(payload.recipe_coefficient, { default: 1, min: 0 })
+            : (base.recipe_coefficient ?? 1),
+        inventory_account: sanitizeString(payload.inventory_account || base.inventory_account || '', { max: 32 }) || null,
         type: payload.type || base.type || 'product',
         name: sanitizeString(payload.name || base.name || '', { max: 128 }),
         sku: sanitizeString(payload.sku || base.sku || '', { max: 50 }),
@@ -1078,6 +1088,14 @@ function validateProduct(product, { partial = false } = {}) {
         errors.push({ field: 'variations', message: 'Не более 200 вариаций на карточку' });
     }
 
+    if (product.display_only && product.parent_id) {
+        errors.push({ field: 'display_only', message: 'Витринная карточка не может иметь parent_id' });
+    }
+
+    if (!product.display_only && product.parent_id === product.internal_id) {
+        errors.push({ field: 'parent_id', message: 'parent_id не может ссылаться на саму карточку' });
+    }
+
     const parameterCount = product.variations
         ? Math.max(
               0,
@@ -1088,7 +1106,7 @@ function validateProduct(product, { partial = false } = {}) {
         errors.push({ field: 'parameters', message: 'Допускается не более 5 параметров' });
     }
 
-    if (!product.images || !product.images.length) {
+    if ((!product.images || !product.images.length) && !product.parent_id) {
         errors.push({ field: 'images', message: 'Добавьте хотя бы одно изображение' });
     }
 
@@ -1134,6 +1152,16 @@ function applyFilters(products, filters = {}) {
     if (filters.visible !== undefined && filters.visible !== null) {
         const visible = filters.visible === 'true' || filters.visible === true;
         result = result.filter((product) => product.is_visible === visible);
+    }
+
+    if (filters.display_only !== undefined && filters.display_only !== null) {
+        const displayOnly = filters.display_only === 'true' || filters.display_only === true;
+        result = result.filter((product) => Boolean(product.display_only) === displayOnly);
+    }
+
+    if (filters.parent_id !== undefined && filters.parent_id !== null) {
+        const parentId = filters.parent_id === 'null' ? null : filters.parent_id;
+        result = result.filter((product) => (product.parent_id ?? null) === parentId);
     }
 
     if (filters.has_barcode !== undefined) {
@@ -1217,6 +1245,15 @@ async function createProduct(payload, actor = 'system') {
     if (!valid) {
         throw new ValidationError('Некорректные данные карточки', errors);
     }
+    if (product.parent_id) {
+        const parent = products.find((item) => item.internal_id === product.parent_id);
+        if (!parent || !parent.display_only) {
+            throw new ValidationError('parent_id должен ссылаться на витринную карточку', [
+                { field: 'parent_id' }
+            ]);
+        }
+        product.display_only = false;
+    }
     enforceUnique(products, product);
     products.push(product);
     await writeProducts(products);
@@ -1242,6 +1279,14 @@ async function updateProduct(id, payload, actor = 'system') {
     }
     if (payload.barcode && payload.barcode !== products[index].barcode && products[index].has_sales) {
         throw new ValidationError('Штрих-код нельзя менять после продажи', [{ field: 'barcode' }], 409);
+    }
+    if (payload.parent_id && payload.parent_id !== products[index].parent_id) {
+        const parent = products.find((item) => item.internal_id === payload.parent_id);
+        if (!parent || !parent.display_only) {
+            throw new ValidationError('parent_id должен ссылаться на витринную карточку', [
+                { field: 'parent_id' }
+            ]);
+        }
     }
     const product = mapProductPayload(payload, { existing: products[index] });
     const { valid, errors } = validateProduct(product);
@@ -1292,6 +1337,14 @@ async function patchProduct(id, changes = {}, actor = 'system') {
             allowed[key] = changes[key];
         }
     });
+    if (allowed.parent_id && allowed.parent_id !== products[index].parent_id) {
+        const parent = products.find((item) => item.internal_id === allowed.parent_id);
+        if (!parent || !parent.display_only) {
+            throw new ValidationError('parent_id должен ссылаться на витринную карточку', [
+                { field: 'parent_id' }
+            ]);
+        }
+    }
     const patched = mapProductPayload(allowed, { existing: products[index] });
     const { valid, errors } = validateProduct(patched, { partial: false });
     if (!valid) {
@@ -1374,6 +1427,102 @@ async function bulkUpdate(ids = [], changes = {}, actor = 'system') {
         updated.map((product) => integrationBus.recordProductUpdate(product, 'bulk_patch'))
     );
     return updated;
+}
+
+async function listVariants(parentId) {
+    const products = await readProducts();
+    return products.filter((product) => product.parent_id === parentId);
+}
+
+async function createVariant(parentId, payload, actor = 'system') {
+    const products = await readProducts();
+    const parent = products.find((item) => item.internal_id === parentId);
+    if (!parent || !parent.display_only) {
+        throw new ValidationError('Родительская карточка не найдена или не является витринной', [], 404);
+    }
+    const variant = mapProductPayload(
+        {
+            ...payload,
+            parent_id: parentId,
+            display_only: false
+        }
+    );
+    const { valid, errors } = validateProduct(variant);
+    if (!valid) {
+        throw new ValidationError('Некорректные данные варианта', errors);
+    }
+    enforceUnique(products, variant);
+    products.push(variant);
+    await writeProducts(products);
+    await appendHistory({
+        product_id: variant.internal_id,
+        action: 'variant_create',
+        actor,
+        diff: payload,
+        snapshot: variant
+    });
+    await markSyncPending(variant.internal_id, ['pos', 'mobile'], actor);
+    await integrationBus.recordProductUpdate(variant, 'create');
+    return variant;
+}
+
+async function updateVariant(variantId, payload, actor = 'system') {
+    const products = await readProducts();
+    const index = products.findIndex((product) => product.internal_id === variantId);
+    if (index === -1) {
+        throw new ValidationError('Вариант не найден', [], 404);
+    }
+    if (!products[index].parent_id) {
+        throw new ValidationError('Карточка не является вариантом', [], 400);
+    }
+    const merged = mapProductPayload(
+        {
+            ...payload,
+            parent_id: products[index].parent_id,
+            display_only: false
+        },
+        { existing: products[index] }
+    );
+    const { valid, errors } = validateProduct(merged);
+    if (!valid) {
+        throw new ValidationError('Некорректные данные варианта', errors);
+    }
+    enforceUnique(products, merged, merged.internal_id);
+    products[index] = merged;
+    await writeProducts(products);
+    await appendHistory({
+        product_id: merged.internal_id,
+        action: 'variant_update',
+        actor,
+        diff: payload,
+        snapshot: merged
+    });
+    await markSyncPending(merged.internal_id, ['pos', 'mobile'], actor);
+    await integrationBus.recordProductUpdate(merged, 'update');
+    return merged;
+}
+
+async function deleteVariant(variantId, actor = 'system') {
+    const products = await readProducts();
+    const index = products.findIndex((product) => product.internal_id === variantId);
+    if (index === -1) {
+        throw new ValidationError('Вариант не найден', [], 404);
+    }
+    if (!products[index].parent_id) {
+        throw new ValidationError('Карточка не является вариантом', [], 400);
+    }
+    const [removed] = products.splice(index, 1);
+    await writeProducts(products);
+    await appendHistory({
+        product_id: removed.internal_id,
+        action: 'variant_delete',
+        actor,
+        diff: removed,
+        snapshot: removed
+    });
+    await markSyncPending(removed.internal_id, ['pos', 'mobile'], actor);
+    await integrationBus.recordProductUpdate(removed, 'delete', { deleted: true });
+    return removed;
 }
 
 function parseListField(value) {
@@ -1627,6 +1776,12 @@ function convertImportRecord(record = {}) {
     
     return {
         internal_id: record.id || record.internal_id || undefined,
+        display_only: record.display_only === true || record.display_only === 'true' || record.display_only === 1 || record.display_only === '1',
+        parent_id: record.parent_id || record.parentId || null,
+        size_label: record.size_label || record.sizeLabel || null,
+        diameter: record.diameter || null,
+        recipe_coefficient: record.recipe_coefficient || record.recipeCoefficient || null,
+        inventory_account: record.inventory_account || record.inventoryAccount || null,
         type: productType,
         name: record.name || record.title || '',
         sku: record.sku || record.article || '',
@@ -1957,6 +2112,10 @@ module.exports = {
     patchProduct,
     deleteProduct,
     bulkUpdate,
+    listVariants,
+    createVariant,
+    updateVariant,
+    deleteVariant,
     importProducts,
     listCategoriesTree,
     upsertCategory,
@@ -1987,4 +2146,3 @@ module.exports = {
     listIntegrationEvents,
     EXPORTS_DIR
 };
-

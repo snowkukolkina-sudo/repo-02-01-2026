@@ -8,7 +8,11 @@ ini_set('error_log', __DIR__ . '/logs/php_errors.log');
 date_default_timezone_set('Europe/Moscow');
 
 // Database configuration
-define('DB_PATH', __DIR__ . '/database.sqlite');
+$dbPath = __DIR__ . '/api/database.sqlite';
+if (!file_exists($dbPath)) {
+    $dbPath = __DIR__ . '/database.sqlite';
+}
+define('DB_PATH', $dbPath);
 
 // API configuration
 define('API_VERSION', '1.0');
@@ -23,4 +27,3 @@ if (!is_dir(__DIR__ . '/logs')) {
     mkdir(__DIR__ . '/logs', 0755, true);
 }
 ?>
-

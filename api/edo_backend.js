@@ -4,7 +4,6 @@ const { Pool } = require('pg');
 const { parseStringPromise } = require('xml2js');
 const path = require('path');
 const fs = require('fs-extra');
-const natural = require('natural');
 
 const inventoryStore = require('../services/inventory_store');
 const { logAudit } = require('../services/audit_logger');
@@ -407,9 +406,67 @@ function normalizeString(value) {
     return (value || '').toString().toLowerCase().replace(/[^a-zа-я0-9\s]/gi, ' ').replace(/\s+/g, ' ').trim();
 }
 
+function jaroDistance(a, b) {
+    if (!a || !b) return 0;
+    if (a === b) return 1;
+    const lenA = a.length;
+    const lenB = b.length;
+    const matchDistance = Math.max(Math.floor(Math.max(lenA, lenB) / 2) - 1, 0);
+
+    const aMatches = new Array(lenA).fill(false);
+    const bMatches = new Array(lenB).fill(false);
+
+    let matches = 0;
+    for (let i = 0; i < lenA; i += 1) {
+        const start = Math.max(0, i - matchDistance);
+        const end = Math.min(i + matchDistance + 1, lenB);
+        for (let j = start; j < end; j += 1) {
+            if (bMatches[j]) continue;
+            if (a[i] !== b[j]) continue;
+            aMatches[i] = true;
+            bMatches[j] = true;
+            matches += 1;
+            break;
+        }
+    }
+
+    if (!matches) return 0;
+
+    let transpositions = 0;
+    let k = 0;
+    for (let i = 0; i < lenA; i += 1) {
+        if (!aMatches[i]) continue;
+        while (!bMatches[k]) k += 1;
+        if (a[i] !== b[k]) transpositions += 1;
+        k += 1;
+    }
+
+    const t = transpositions / 2;
+    return (matches / lenA + matches / lenB + (matches - t) / matches) / 3;
+}
+
+function jaroWinklerDistance(a, b) {
+    const jaro = jaroDistance(a, b);
+    if (!jaro) return 0;
+    const maxPrefix = 4;
+    let prefix = 0;
+    const limit = Math.min(maxPrefix, a.length, b.length);
+    for (let i = 0; i < limit; i += 1) {
+        if (a[i] === b[i]) {
+            prefix += 1;
+        } else {
+            break;
+        }
+    }
+    const scalingFactor = 0.1;
+    return jaro + prefix * scalingFactor * (1 - jaro);
+}
+
 function computeNameScore(nameA, nameB) {
     if (!nameA || !nameB) return 0;
-    const score = natural.JaroWinklerDistance(nameA, nameB, { ignoreCase: true });
+    const normalizedA = nameA.toLowerCase();
+    const normalizedB = nameB.toLowerCase();
+    const score = jaroWinklerDistance(normalizedA, normalizedB);
     return Number.isFinite(score) ? score : 0;
 }
 
@@ -1718,4 +1775,3 @@ router.post('/inventory/products', async (req, res) => {
 });
 
 module.exports = router;
-

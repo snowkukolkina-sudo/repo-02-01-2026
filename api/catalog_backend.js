@@ -285,6 +285,45 @@ router.get('/products/:id', async (req, res) => {
     }
 });
 
+router.get('/items/:id/variants', async (req, res) => {
+    try {
+        const variants = await catalogStore.listVariants(req.params.id);
+        res.json(ok(variants));
+    } catch (error) {
+        sendError(res, error);
+    }
+});
+
+router.post('/items/:id/variants', ensurePermission('product.create'), async (req, res) => {
+    try {
+        const actor = req.user?.id || 'admin';
+        const variant = await catalogStore.createVariant(req.params.id, req.body || {}, actor);
+        res.status(201).json(ok(variant));
+    } catch (error) {
+        sendError(res, error);
+    }
+});
+
+router.patch('/items/variant/:id', ensurePermission('product.update'), async (req, res) => {
+    try {
+        const actor = req.user?.id || 'admin';
+        const variant = await catalogStore.updateVariant(req.params.id, req.body || {}, actor);
+        res.json(ok(variant));
+    } catch (error) {
+        sendError(res, error);
+    }
+});
+
+router.delete('/items/variant/:id', ensurePermission('product.delete'), async (req, res) => {
+    try {
+        const actor = req.user?.id || 'admin';
+        const removed = await catalogStore.deleteVariant(req.params.id, actor);
+        res.json(ok(removed));
+    } catch (error) {
+        sendError(res, error);
+    }
+});
+
 router.post('/products', ensurePermission('product.create'), async (req, res) => {
     try {
         const actor = req.user?.id || 'admin';
@@ -659,4 +698,3 @@ router.get('/products/:id/history/compare', async (req, res) => {
 });
 
 module.exports = router;
-

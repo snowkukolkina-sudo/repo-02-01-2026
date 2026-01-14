@@ -1,0 +1,31 @@
+[
+    {
+        "id": "user-admin",
+        "email": "admin@dandy.local",
+        "name": "Главный админ",
+        "role": "admin",
+        "password": "admin123"
+    },
+    {
+        "id": "user-content",
+        "email": "content@dandy.local",
+        "name": "Контент-менеджер",
+        "role": "content",
+        "password": "content123"
+    },
+    {
+        "id": "user-cashier",
+        "email": "cashier@dandy.local",
+        "name": "Кассир",
+        "role": "cashier",
+        "password": "cashier123"
+    },
+    {
+        "id": "user-viewer",
+        "email": "viewer@dandy.local",
+        "name": "Наблюдатель",
+        "role": "viewer",
+        "password": "viewer123"
+    }
+]
+

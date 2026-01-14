@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Настройка Диадока</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #0a615c;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #0a615c;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background: #08615b;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .message {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 6px;
+            display: none;
+        }
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            color: #004085;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Настройка Диадока</h1>
+        
+        <div class="info">
+            <strong>UUID от пользователя:</strong><br>
+            <code>d8271eda-fbca-addd-5af4-87369468ef94</code><br><br>
+            Этот UUID можно использовать как Box ID или API ключ.
+        </div>
+        
+        <form id="diadocForm">
+            <div class="form-group">
+                <label for="api_key">API ключ (или UUID):</label>
+                <input type="text" id="api_key" name="api_key" 
+                       value="d8271eda-fbca-addd-5af4-87369468ef94" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="box_id">Box ID (или UUID):</label>
+                <input type="text" id="box_id" name="box_id" 
+                       value="d8271eda-fbca-addd-5af4-87369468ef94" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="inn">ИНН (опционально):</label>
+                <input type="text" id="inn" name="inn" placeholder="1234567890">
+            </div>
+            
+            <button type="submit" id="submitBtn">💾 Сохранить конфигурацию</button>
+        </form>
+        
+        <div id="message" class="message"></div>
+    </div>
+    
+    <script>
+        const form = document.getElementById('diadocForm');
+        const messageDiv = document.getElementById('message');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Сохранение...';
+            messageDiv.style.display = 'none';
+            
+            const formData = {
+                api_key: document.getElementById('api_key').value.trim(),
+                box_id: document.getElementById('box_id').value.trim(),
+                inn: document.getElementById('inn').value.trim()
+            };
+            
+            try {
+                const response = await fetch('/api/edo/config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.ok) {
+                    showMessage('✅ ' + (data.message || 'Конфигурация успешно сохранена!'), 'success');
+                } else {
+                    showMessage('❌ Ошибка: ' + (data.error || 'Не удалось сохранить'), 'error');
+                }
+            } catch (error) {
+                showMessage('❌ Ошибка соединения: ' + error.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '💾 Сохранить конфигурацию';
+            }
+        });
+        
+        function showMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = 'message ' + type;
+            messageDiv.style.display = 'block';
+        }
+        
+        // Загружаем текущую конфигурацию при загрузке страницы
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/edo/config');
+                const data = await response.json();
+                
+                if (data.ok && data.diadocConfigured) {
+                    showMessage('✅ Диадок уже настроен!', 'success');
+                }
+            } catch (error) {
+                console.log('Не удалось загрузить конфигурацию:', error);
+            }
+        }
+        
+        loadConfig();
+    </script>
+</body>
+</html>
+
+

@@ -1,0 +1,1817 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DANDY - Товароучётная система</title>
+    <link rel="stylesheet" href="assets/custom.css">
+    <!-- Библиотеки для графиков, Excel, PDF -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root {
+            /* Цвета ТОЧНО как на главном сайте */
+            --primary: #08615b;
+            --secondary: #00706c;
+            --dandy-bg: #08615b;
+            --dandy-green: #04746c;
+            --dandy-pink: #FF66B3;
+            --dandy-yellow: #e4bc6c;
+            --text-light: #F3EADB;
+            --text-on-green: #F3EADB;
+            --accent: #eebc5c;
+            --card: #094a45;
+            --chip: #0b5752;
+            --chip-hover: #0e6a64;
+            --chip-border: rgba(255,255,255,.12);
+            --danger: #db3f33;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --dandy-card: #094a45;
+            --dandy-muted: #0e6a64;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--primary);
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+
+        .admin-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: var(--dandy-green);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .brand-new-logo {
+            height: 50px;
+            width: auto;
+            object-fit: contain;
+            display: block;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+            transition: transform 0.3s ease;
+        }
+
+        .brand-new-logo:hover {
+            transform: scale(1.05);
+        }
+
+        .logo-text {
+            color: white;
+        }
+
+        .logo-title {
+            font-size: 1.5rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, var(--dandy-yellow), #fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-subtitle {
+            font-size: 0.7rem;
+            opacity: 0.8;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn-back {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-back:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-1px);
+        }
+
+        .tabs-wrap {
+            background: var(--secondary);
+            overflow-x: auto;
+            border-top: 1px solid var(--chip-border);
+            position: relative;
+            padding: 0.5rem 1rem;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.3) transparent;
+        }
+
+        .tabs-wrap::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .tabs-wrap::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .tabs-wrap::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            min-width: max-content;
+            white-space: nowrap;
+        }
+
+        .tabs li {
+            flex-shrink: 0;
+        }
+
+        .tab {
+            display: block;
+            padding: 0.75rem 1.2rem;
+            border-radius: 25px;
+            background: transparent;
+            color: var(--dandy-pink);
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .tab:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .tab.active {
+            background: rgba(255,255,255,0.15);
+            color: var(--dandy-pink);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3);
+        }
+
+        .main-content {
+            flex: 1;
+            background: var(--primary);
+            border-radius: 20px 20px 0 0;
+            margin-top: 1rem;
+            padding: 2rem;
+            min-height: calc(100vh - 140px);
+        }
+
+        .page-content {
+            display: none;
+        }
+
+        .page-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--chip-border);
+            box-shadow: 0 6px 24px rgba(0,0,0,0.06);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+        .grid-3 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+        .grid-4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background: rgba(255,255,255,0.03);
+        }
+
+        .table th,
+        .table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--chip-border);
+            color: var(--text-light);
+        }
+
+        .table th {
+            background: var(--chip);
+            font-weight: 600;
+            color: var(--text-light);
+            position: sticky;
+            top: 0;
+        }
+
+        .table tr:hover {
+            background: var(--chip-hover);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: var(--dandy-green);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0a4d35;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(11, 92, 59, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-light);
+            border: 1px solid var(--chip-border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--chip-hover);
+            color: var(--text-light);
+            border-color: var(--accent);
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-success { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
+        .badge-warning { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
+        .badge-danger { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #dc2626; }
+        .badge-info { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid #3b82f6; }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--chip-border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s ease;
+            background: rgba(255,255,255,0.05);
+            color: var(--text-light);
+        }
+
+        .form-select option {
+            background: #094a45;
+            color: #F3EADB;
+        }
+
+        .form-input::placeholder {
+            color: rgba(243, 234, 219, 0.5);
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: rgba(255,255,255,0.1);
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            border-left: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .alert-danger {
+            background: #fef2f2;
+            border-left-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .alert-warning {
+            background: #fffbeb;
+            border-left-color: #f59e0b;
+            color: #92400e;
+        }
+
+        .alert-info {
+            background: #f0f9ff;
+            border-left-color: #3b82f6;
+            color: #1e40af;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--dandy-green), var(--dandy-bg));
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tabs-secondary {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .grid-2, .grid-3, .grid-4 {
+                grid-template-columns: 1fr;
+            }
+
+            /* Мобильные оптимизации */
+            #globalSearchContainer {
+                margin: 1rem 0 !important;
+                order: 1;
+                flex: 1 1 100%;
+            }
+
+            .header-actions {
+                justify-content: space-between;
+            }
+
+            #notificationBell {
+                padding: 0.5rem;
+                font-size: 1rem;
+            }
+
+            .tab {
+                padding: 0.6rem 1rem;
+                font-size: 0.75rem;
+            }
+
+            .table {
+                font-size: 0.85rem;
+            }
+
+            #notificationsDropdown {
+                width: calc(100vw - 40px) !important;
+                right: 10px !important;
+                left: 10px !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .brand-new-logo {
+                width: 80px;
+            }
+
+            .logo-title {
+                font-size: 1.2rem;
+            }
+
+            .logo-subtitle {
+                font-size: 0.7rem;
+            }
+
+            .tab {
+                padding: 0.5rem 0.8rem;
+                font-size: 0.7rem;
+            }
+        }
+
+        /* Bounce animation для drag & drop */
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <header class="header">
+            <div class="logo-section">
+                <img class="brand-new-logo" src="assets/brand/logo.svg" alt="ДЭНДИ пицца и суши">
+                <div class="logo-text">
+                    <div class="logo-title">ТОВАРОУЧЁТ</div>
+                    <div class="logo-subtitle">DANDY Inventory System</div>
+                </div>
+            </div>
+            
+            <!-- Глобальный поиск будет добавлен динамически здесь -->
+            
+            <div class="header-actions" style="display: flex; gap: 1rem; align-items: center;">
+                <button id="notificationBell" onclick="toggleNotifications()" style="position: relative; background: rgba(255,255,255,0.1); border: 1px solid var(--chip-border); padding: 0.6rem 1rem; border-radius: 25px; cursor: pointer; color: var(--text-light); transition: all 0.3s ease; font-size: 1.2rem;">
+                    🔔
+                    <span id="notificationBadge" style="display: none; position: absolute; top: -5px; right: -5px; background: var(--danger); color: white; font-size: 0.7rem; padding: 0.2rem 0.4rem; border-radius: 10px; min-width: 18px; text-align: center;">0</span>
+                </button>
+                <a href="login-system.html" class="btn-back">Выход</a>
+            </div>
+        </header>
+
+        <!-- Панель уведомлений -->
+        <div id="notificationsDropdown" style="display: none; position: fixed; top: 80px; right: 20px; width: 400px; max-height: 600px; background: #094a45; border: 1px solid var(--chip-border); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); z-index: 1000; overflow: hidden;">
+            <div id="notificationsPanel" style="padding: 1rem; overflow-y: auto; max-height: 550px;"></div>
+        </div>
+
+        <nav class="tabs-wrap">
+            <ul class="tabs" id="tabsContainer">
+                <li><a class="tab active" data-page="dashboard">📊 ДАШБОРД</a></li>
+                <li><a class="tab" data-page="nomenclature">📦 НОМЕНКЛАТУРА</a></li>
+                <li><a class="tab" data-page="recipes">📖 ТК/ТТК</a></li>
+                <li><a class="tab" data-page="warehouse">🏭 СКЛАД</a></li>
+                <li><a class="tab" data-page="production">⚙️ ПРОИЗВОДСТВО</a></li>
+                <li><a class="tab" data-page="bar">🍺 БАР/РАЗЛИВ</a></li>
+                <li><a class="tab" data-page="inventory">📋 ИНВЕНТАРИЗАЦИЯ</a></li>
+                <li><a class="tab" data-page="egais-module">🍷 ЕГАИС</a></li>
+                <li><a class="tab" data-page="crpt">🏷️ ЧЕСТНЫЙ ЗНАК</a></li>
+                <li><a class="tab" data-page="mercury">🐄 МЕРКУРИЙ</a></li>
+                <li><a class="tab" data-page="integrations">🔄 ИНТЕГРАЦИИ</a></li>
+                <li><a class="tab" data-page="reports">📈 ОТЧЁТЫ</a></li>
+                <li><a class="tab" data-page="settings">⚙️ НАСТРОЙКИ</a></li>
+            </ul>
+            <div class="tabs-underline">
+                <div class="thumb"></div>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <!-- Dashboard -->
+            <div id="dashboard" class="page-content active">
+                <div class="grid grid-4">
+                    <div class="stat-card">
+                        <div class="stat-value">₽ 2 456 780</div>
+                        <div class="stat-label">Валовая прибыль</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">1 245</div>
+                        <div class="stat-label">Позиций в обороте</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">18</div>
+                        <div class="stat-label">Критические остатки</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">94.5%</div>
+                        <div class="stat-label">Точность учета</div>
+                    </div>
+                </div>
+
+                <!-- Новые графики -->
+                <div class="grid grid-2" style="margin-top: 2rem;">
+                    <div class="card">
+                        <div class="card-title">📊 Динамика продаж (30 дней)</div>
+                        <canvas id="salesDynamicsChart" style="max-height: 300px;"></canvas>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">🏆 ТОП-10 товаров</div>
+                        <canvas id="topProductsChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+
+                <div class="grid grid-2" style="margin-top: 2rem;">
+                    <div class="card">
+                        <div class="card-title">💎 Рентабельность по категориям</div>
+                        <canvas id="profitabilityChart" style="max-height: 300px;"></canvas>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">📦 Оборачиваемость</div>
+                        <canvas id="turnoverChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+
+                <div class="grid grid-2">
+                    <div class="card">
+                        <h3 class="card-title">🚨 Критические алерты</h3>
+                        <div class="alert alert-danger">
+                            <span>⚠️</span>
+                            <div>
+                                <strong>Остаток «Лосось филе» < 1.0 кг</strong>
+                                <div style="font-size: 0.85em; margin-top: 0.25rem;">Необходимо срочно пополнить</div>
+                            </div>
+                        </div>
+                        <div class="alert alert-warning">
+                            <span>⏰</span>
+                            <div>
+                                <strong>Партия «Молоко 3.2%» истекает через 2 дня</strong>
+                                <div style="font-size: 0.85em; margin-top: 0.25rem;">Партия №12345, 15 л</div>
+                            </div>
+                        </div>
+                        <div class="alert alert-warning">
+                            <span>📋</span>
+                            <div>
+                                <strong>Меркурий: 3 ВСД требуют погашения</strong>
+                                <div style="font-size: 0.85em; margin-top: 0.25rem;">Срок: до конца дня</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card-title">📊 Продажи и списания за смену</h3>
+                        <table class="table">
+                            <tr>
+                                <td><strong>Продажи</strong></td>
+                                <td style="text-align: right;">₽ 128 540</td>
+                            </tr>
+                            <tr>
+                                <td><strong>COGS (себестоимость)</strong></td>
+                                <td style="text-align: right;">₽ 48 560</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Валовая прибыль</strong></td>
+                                <td style="text-align: right; color: var(--dandy-green); font-weight: 700;">₽ 79 980</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Списано алкоголя</strong></td>
+                                <td style="text-align: right;">24 порции</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Потери/Пролив</strong></td>
+                                <td style="text-align: right;">1.2 л</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">🔄 Последние операции</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Время</th>
+                                <th>Операция</th>
+                                <th>Документ</th>
+                                <th>Сумма</th>
+                                <th>Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>14:23</td>
+                                <td>Приход от поставщика</td>
+                                <td>УПД-00456</td>
+                                <td>₽ 45 600</td>
+                                <td><span class="badge badge-success">Проведен</span></td>
+                            </tr>
+                            <tr>
+                                <td>13:45</td>
+                                <td>Выпуск полуфабрикатов</td>
+                                <td>ПР-00123</td>
+                                <td>—</td>
+                                <td><span class="badge badge-success">Завершен</span></td>
+                            </tr>
+                            <tr>
+                                <td>12:10</td>
+                                <td>Списание (реализация)</td>
+                                <td>ЕГАИС-789</td>
+                                <td>—</td>
+                                <td><span class="badge badge-info">Отправлен</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Nomenclature -->
+            <div id="nomenclature" class="page-content">
+                <div class="card">
+                    <h3 class="card-title">📦 Номенклатура и классификаторы</h3>
+                    <div class="tabs-secondary">
+                        <button class="btn btn-primary btn-small">Все товары</button>
+                        <button class="btn btn-secondary btn-small">Ингредиенты</button>
+                        <button class="btn btn-secondary btn-small">Полуфабрикаты</button>
+                        <button class="btn btn-secondary btn-small">Алкоголь</button>
+                        <button class="btn btn-secondary btn-small">Тара</button>
+                    </div>
+                    <button class="btn btn-primary" onclick="createProduct()">+ Добавить товар</button>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Список товаров</h3>
+                    <div style="margin-bottom: 1rem;">
+                        <input type="text" class="form-input" id="nomenclatureSearch" placeholder="🔍 Поиск по названию, коду, категории...">
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Код</th>
+                                <th>Наименование</th>
+                                <th>Группа</th>
+                                <th>ЕИ</th>
+                                <th>Остаток</th>
+                                <th>Цена</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsTableBody">
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 2rem; color: #999;">
+                                    Загрузка...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Recipes / Tech Cards -->
+            <div id="recipes" class="page-content">
+                <div class="card">
+                    <h3 class="card-title">📖 Технологические карты (ТК/ТТК)</h3>
+                    <button class="btn btn-primary" onclick="createRecipe()">+ Создать ТК</button>
+                    <button class="btn btn-secondary">Импорт из CSV</button>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Список техкарт</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Код</th>
+                                <th>Блюдо</th>
+                                <th>Выход (порция)</th>
+                                <th>Себестоимость</th>
+                                <th>Ингредиентов</th>
+                                <th>Версия</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recipesTableBody">
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 2rem; color: #999;">
+                                    Загрузка...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Warehouse -->
+            <div id="warehouse" class="page-content">
+                <div class="grid grid-3">
+                    <div class="card">
+                        <h3 class="card-title">🏭 Склады</h3>
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="padding: 0.5rem; border-bottom: 1px solid #e5e5e5;">
+                                <strong>Основной склад</strong><br>
+                                <span style="font-size: 0.85em; color: #666;">1245 позиций</span>
+                            </li>
+                            <li style="padding: 0.5rem; border-bottom: 1px solid #e5e5e5;">
+                                <strong>Кухня/Цех</strong><br>
+                                <span style="font-size: 0.85em; color: #666;">145 позиций</span>
+                            </li>
+                            <li style="padding: 0.5rem; border-bottom: 1px solid #e5e5e5;">
+                                <strong>Бар</strong><br>
+                                <span style="font-size: 0.85em; color: #666;">78 позиций</span>
+                            </li>
+                            <li style="padding: 0.5rem;">
+                                <strong>Разливной узел</strong><br>
+                                <span style="font-size: 0.85em; color: #666;">12 позиций</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card-title">📋 Документы</h3>
+                        <button class="btn btn-primary btn-small" style="width: 100%; margin-bottom: 0.5rem;">Приход</button>
+                        <button class="btn btn-primary btn-small" style="width: 100%; margin-bottom: 0.5rem;">Перемещение</button>
+                        <button class="btn btn-primary btn-small" style="width: 100%; margin-bottom: 0.5rem;">Списание</button>
+                        <button class="btn btn-primary btn-small" style="width: 100%;">Возврат поставщику</button>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card-title">⚠️ Критические остатки</h3>
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="padding: 0.5rem; background: rgba(239, 68, 68, 0.15); border-radius: 6px; margin-bottom: 0.5rem; border: 1px solid rgba(239, 68, 68, 0.3);">
+                                <strong style="color: #fca5a5;">Лосось филе</strong><br>
+                                <span style="font-size: 0.85em; color: #F3EADB;">0.8 кг (мин: 5 кг)</span>
+                            </li>
+                            <li style="padding: 0.5rem; background: rgba(245, 158, 11, 0.15); border-radius: 6px; margin-bottom: 0.5rem; border: 1px solid rgba(245, 158, 11, 0.3);">
+                                <strong style="color: #fbbf24;">Тесто для пиццы</strong><br>
+                                <span style="font-size: 0.85em; color: #F3EADB;">12 шт (мин: 50 шт)</span>
+                            </li>
+                            <li style="padding: 0.5rem; background: rgba(245, 158, 11, 0.15); border-radius: 6px; border: 1px solid rgba(245, 158, 11, 0.3);">
+                                <strong style="color: #fbbf24;">Соус томатный</strong><br>
+                                <span style="font-size: 0.85em; color: #F3EADB;">2.5 л (мин: 10 л)</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Остатки по складам</h3>
+                    <div style="margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center;">
+                        <input type="text" class="form-input" placeholder="🔍 Поиск по наименованию, коду, партии..." style="flex: 1;">
+                        <button class="btn btn-primary" onclick="warehouseModule.createArrivalDocument()">
+                            📥 Приход товара
+                        </button>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Код</th>
+                                <th>Наименование</th>
+                                <th>Партия</th>
+                                <th>Срок годности</th>
+                                <th>Склад</th>
+                                <th>Количество</th>
+                                <th>Сумма</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stockBalancesBody">
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 2rem; color: #999;">
+                                    Загрузка...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Production -->
+            <div id="production" class="page-content">
+                <div class="card">
+                    <h3 class="card-title">⚙️ Производство / Кухня</h3>
+                    <button class="btn btn-primary" onclick="productionModule.createProductionOrder()" style="margin-top: 1rem;">
+                        ➕ Создать производственный наряд
+                    </button>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">📋 Производственные наряды</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>№ Наряда</th>
+                                <th>Дата</th>
+                                <th>Полуфабрикат</th>
+                                <th>План</th>
+                                <th>Факт</th>
+                                <th>Выход %</th>
+                                <th>Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productionOrdersBody">
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 2rem; color: #999;">
+                                    Загрузка...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Bar / Draft -->
+            <div id="bar" class="page-content">
+                <div class="card">
+                    <h3 class="card-title">🍺 Бар и разливное пиво</h3>
+                    <div class="alert alert-info">
+                        <span>💡</span>
+                        <div>
+                            <strong>Режим учета:</strong> Списание при вскрытии бутылки + порционный учет разлива
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-2">
+                    <div class="card">
+                        <h3 class="card-title">🍾 Открытые бутылки</h3>
+                        <button class="btn btn-primary" onclick="openBottle()" style="margin-bottom: 1rem;">🔓 Вскрыть бутылку</button>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Наименование</th>
+                                    <th>Объём</th>
+                                    <th>Остаток</th>
+                                    <th>Вскрыта</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody id="openedBottlesBody">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; padding: 2rem; color: #999;">
+                                        Загрузка...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card-title">🍺 Разливное пиво (кеги)</h3>
+                        <div id="kegsContainer" style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1rem;">
+                            <!-- Кеги будут здесь -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">📋 Акты и списания</h3>
+                    <div class="tabs-secondary">
+                        <button class="btn btn-primary btn-small">Вскрытие</button>
+                        <button class="btn btn-secondary btn-small">Порча</button>
+                        <button class="btn btn-secondary btn-small">Техпотери</button>
+                        <button class="btn btn-secondary btn-small">Пролив</button>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Время</th>
+                                <th>Операция</th>
+                                <th>Номенклатура</th>
+                                <th>Количество</th>
+                                <th>Причина</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>14:30</td>
+                                <td>Вскрытие</td>
+                                <td>Водка "Русский Стандарт" 0.5л</td>
+                                <td>1 шт (500 мл)</td>
+                                <td>Обслуживание зала</td>
+                            </tr>
+                            <tr>
+                                <td>13:15</td>
+                                <td>Техпотери</td>
+                                <td>Пиво светлое разливное</td>
+                                <td>0.8 л</td>
+                                <td>Пена/промывка</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Inventory -->
+            <div id="inventory" class="page-content">
+                <div class="card">
+                    <h3 class="card-title">📋 Инвентаризация</h3>
+                    <button class="btn btn-primary" onclick="inventoryCountModule.startInventory()">🎯 Начать инвентаризацию</button>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">История инвентаризаций</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>№ Инвентаризации</th>
+                                <th>Дата</th>
+                                <th>Склад</th>
+                                <th>Прогресс</th>
+                                <th>Расхождения</th>
+                                <th>Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoriesBody">
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 2rem; color: #999;">
+                                    Загрузка...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- EGAIS Module -->
+            <div id="egais-module" class="page-content">
+                <div class="card">
+                    <h3 class="card-title">🍷 ЕГАИС — управление алкоголем</h3>
+                    <div class="alert alert-info">
+                        <span>ℹ️</span>
+                        <div>
+                            <strong>Режим работы:</strong> Ресторан (разлив) + Магазин (бутылочное)<br>
+                            <strong>УТМ статус:</strong> <span id="utmStatus"></span>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
+                        <button class="btn btn-primary" onclick="egaisModule.acceptTTN()">📥 Принять ТТН</button>
+                        <button class="btn btn-secondary" onclick="egaisModule.createWriteoffAct()">📋 Акт списания</button>
+                        <button class="btn btn-secondary" onclick="egaisModule.createReturnAct()">↩️ Возврат поставщику</button>
+                        <button class="btn btn-secondary" onclick="egaisModule.syncWithEGAIS()">🔄 Сверка остатков</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-2">
+                    <div class="card">
+                        <h3 class="card-title">📊 Остатки алкоголя</h3>
+                        <div id="alcoholStockContainer"></div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">⚠️ Требуют внимания</h3>
+                        <div class="alert alert-warning">
+                            <span>⚠️</span>
+                            <div>
+                                <strong>Ожидают подтверждения:</strong> 1 операция<br>
+                                <a href="#" style="color: inherit; text-decoration: underline;">Проверить →</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">📋 Журнал операций ЕГАИС</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Дата/Время</th>
+                                <th>Операция</th>
+                                <th>Документ</th>
+                                <th>Статус</th>
+                                <th>Ошибки</th>
+                            </tr>
+                        </thead>
+                        <tbody id="egaisOperationsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Honest Sign / CRPT -->
+            <div id="crpt" class="page-content">
+                <div class="card">
+                    <h3 class="card-title">🏷️ Честный ЗНАК — маркировка товаров</h3>
+                    <div class="alert alert-info">
+                        <span>ℹ️</span>
+                        <div>
+                            <strong>API статус:</strong> <span id="crptAPIStatus"></span>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
+                        <button class="btn btn-primary" onclick="crptModule.scanCode()">📷 Сканировать код</button>
+                        <button class="btn btn-secondary" onclick="crptModule.startMassScanning()">📋 Массовая загрузка</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-2">
+                    <div class="card">
+                        <h3 class="card-title">📊 Статистика кодов</h3>
+                        <div id="crptStatisticsContainer"></div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">⚠️ Требуют внимания</h3>
+                        <div class="alert alert-info">
+                            <span>✅</span>
+                            <div>Все операции завершены успешно</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">📋 Коды маркировки</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th>Код DataMatrix</th>
+                                <th>Товар</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="crptCodesBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Mercury / VETIS -->
+            <div id="mercury" class="page-content">
+                <div class="card">
+                    <h3 class="card-title">🐄 ФГИС «Меркурий» — ветеринарный контроль</h3>
+                    <div class="alert alert-info">
+                        <span>ℹ️</span>
+                        <div>
+                            <strong>ВЕТИС.API статус:</strong> <span id="mercuryAPIStatus"></span><br>
+                            <strong>Предприятие:</strong> ООО "ДЭНДИ"
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
+                        <button class="btn btn-primary" onclick="mercuryModule.loadIncomingVSD()">📥 Загрузить входящие</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-2">
+                    <div class="card">
+                        <h3 class="card-title">📊 Статистика ВСД</h3>
+                        <div id="mercuryStatisticsContainer"></div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">⚠️ Требуют внимания</h3>
+                        <div class="alert alert-warning">
+                            <span>⚠️</span>
+                            <div>
+                                <strong>Требуется погашение ВСД!</strong><br>
+                                Проверьте партии со скорым истечением срока
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">📋 Журнал ВСД</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Номер ВСД</th>
+                                <th>Дата поступления</th>
+                                <th>Товар</th>
+                                <th>Объём</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="mercuryVSDBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Integrations -->
+            <div id="integrations" class="page-content">
+                <div class="card">
+                    <h3 class="card-title">🔄 Интеграции и обмены данными</h3>
+                </div>
+
+                <div class="grid grid-3">
+                    <div class="card">
+                        <h3 class="card-title">🏢 1С</h3>
+                        <div style="margin-bottom: 1rem;">
+                            <strong>Статус:</strong> <span class="badge badge-danger">Не подключен</span><br>
+                            <strong>Протокол:</strong> CommerceML 2.0 / OData
+                        </div>
+                        <button class="btn btn-primary btn-small" onclick="integrationsModule.setup1C()">⚙️ Настроить</button>
+                        <button class="btn btn-secondary btn-small" onclick="integrationsModule.sync1C()">🔄 Синхронизировать</button>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card-title">🍽️ r_keeper</h3>
+                        <div style="margin-bottom: 1rem;">
+                            <strong>Статус:</strong> <span class="badge badge-danger">Не подключен</span><br>
+                            <strong>Режим:</strong> CSV / XML / API
+                        </div>
+                        <button class="btn btn-primary btn-small" onclick="integrationsModule.setupRKeeper()">⚙️ Настроить</button>
+                        <button class="btn btn-secondary btn-small" onclick="integrationsModule.importSalesFromRKeeper()">📥 Импорт продаж</button>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card-title">🛒 Контур.Маркет</h3>
+                        <div style="margin-bottom: 1rem;">
+                            <strong>Статус:</strong> <span class="badge badge-danger">Не подключен</span><br>
+                            <strong>API:</strong> REST v3
+                        </div>
+                        <button class="btn btn-primary btn-small" onclick="integrationsModule.setupKontur()">⚙️ Настроить</button>
+                        <button class="btn btn-secondary btn-small" onclick="integrationsModule.importOrdersFromKontur()">📥 Импорт заказов</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">📥 Синхронизация товаров с системой</h3>
+                    <p style="margin-bottom: 1rem; color: var(--text-light); opacity: 0.8;">
+                        Загрузите все товары из админки и сайта в номенклатуру товароучётной системы. 
+                        Товары будут синхронизированы с API и обновлены в реальном времени.
+                    </p>
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <button class="btn btn-primary" onclick="nomenclatureModule.loadProductsFromAPI()">
+                            🔄 Синхронизировать с API (рекомендуется)
+                        </button>
+                        <button class="btn btn-secondary" onclick="nomenclatureModule.loadMenuFromJSON()">
+                            📋 Загрузить из menu_data.json (fallback)
+                        </button>
+                            <button class="btn btn-success" onclick="inventorySystem.publishMenuToSite()">
+                                🚀 Опубликовать меню на сайт
+                            </button>
+                    </div>
+                    <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 8px; font-size: 0.85rem; color: var(--text-light); opacity: 0.7;">
+                        💡 <strong>Рекомендация:</strong> Используйте синхронизацию с API для получения актуальных данных 
+                        из админки и сайта. Все товары будут автоматически обновлены.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports -->
+            <div id="reports" class="page-content">
+                <div class="card">
+                    <h3 class="card-title">📈 Отчёты и аналитика</h3>
+                    
+                    <!-- Фильтр периода -->
+                    <div style="display: flex; gap: 1rem; align-items: center; margin-top: 1rem; flex-wrap: wrap;">
+                        <div class="form-group" style="margin: 0;">
+                            <label class="form-label" style="margin-bottom: 0.25rem;">Период с:</label>
+                            <input type="date" class="form-input" id="reportDateFrom">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label class="form-label" style="margin-bottom: 0.25rem;">по:</label>
+                            <input type="date" class="form-input" id="reportDateTo">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-3">
+                    <div class="card">
+                        <h3 class="card-title">💰 COGS / Себестоимость</h3>
+                        <p style="margin-bottom: 1rem; color: #666;">Отчет по себестоимости проданных товаров</p>
+                        <button class="btn btn-primary btn-small" onclick="reportsModule.generateCOGSReport()">Сформировать</button>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card-title">⭐ Menu Engineering</h3>
+                        <p style="margin-bottom: 1rem; color: #666;">Анализ меню: звезды, трудяги, собаки, лошади</p>
+                        <button class="btn btn-primary btn-small" onclick="reportsModule.generateMenuEngineeringReport()">Сформировать</button>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card-title">📊 ABC-XYZ анализ</h3>
+                        <p style="margin-bottom: 1rem; color: #666;">Классификация товаров по значимости</p>
+                        <button class="btn btn-primary btn-small" onclick="reportsModule.generateABCXYZReport()">Сформировать</button>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card-title">🗑️ Waste / Потери</h3>
+                        <p style="margin-bottom: 1rem; color: var(--text-light); opacity: 0.8;">Отчет по потерям и списаниям</p>
+                        <button class="btn btn-primary btn-small" onclick="reportsModule.generateWasteReport()">📊 Сформировать</button>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card-title">📦 Оборачиваемость</h3>
+                        <p style="margin-bottom: 1rem; color: var(--text-light); opacity: 0.8;">Скорость оборачиваемости товаров</p>
+                        <button class="btn btn-primary btn-small" onclick="reportsModule.generateTurnoverReport()">📊 Сформировать</button>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card-title">🍷 Алко-декларации</h3>
+                        <p style="margin-bottom: 1rem; color: var(--text-light); opacity: 0.8;">Формы 7/8 ФСРАР</p>
+                        <button class="btn btn-primary btn-small" onclick="reportsModule.generateAlcoholReport()">📊 Сформировать</button>
+                    </div>
+                </div>
+
+                <!-- Контейнер для результатов отчёта -->
+                <div id="reportResults"></div>
+            </div>
+
+            <!-- Settings -->
+            <div id="settings" class="page-content">
+                <!-- Селектор ролей -->
+                <div id="rolesSelector" style="margin-bottom: 2rem;">
+                    <!-- Будет заполнено динамически -->
+                </div>
+                
+                <div class="card">
+                    <h3 class="card-title">⚙️ Настройки системы товароучёта</h3>
+                </div>
+
+                <div class="grid grid-2">
+                    <div class="card">
+                        <h3 class="card-title">🏢 Организация</h3>
+                        <div class="form-group">
+                            <label class="form-label">Наименование</label>
+                            <input type="text" class="form-input" value="ООО &quot;ДЭНДИ&quot;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">ИНН</label>
+                            <input type="text" class="form-input" value="7700123456">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">КПП</label>
+                            <input type="text" class="form-input" value="770001001">
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card-title">💼 Налоговые настройки</h3>
+                        <div class="form-group">
+                            <label class="form-label">Режим налогообложения</label>
+                            <select class="form-select">
+                                <option>УСН (доходы - расходы)</option>
+                                <option>ОСН</option>
+                                <option>ПСН</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Ставка НДС по умолчанию</label>
+                            <select class="form-select">
+                                <option>20%</option>
+                                <option>10%</option>
+                                <option>Без НДС</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card-title">📊 Методы учета</h3>
+                        <div class="form-group">
+                            <label class="form-label">Метод себестоимости</label>
+                            <select class="form-select">
+                                <option>FIFO (по партиям)</option>
+                                <option>Средняя скользящая</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Учёт разлива</label>
+                            <select class="form-select">
+                                <option>Списание при вскрытии</option>
+                                <option>Порционное списание</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card-title">🔔 Уведомления</h3>
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" checked>
+                                <span>Критические остатки</span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" checked>
+                                <span>Просрочка товаров</span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox">
+                                <span>Ошибки регуляторов</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Управление складами -->
+                <div class="card">
+                    <div id="warehousesManagement"></div>
+                </div>
+
+                <!-- Управление единицами измерения -->
+                <div class="card">
+                    <div id="unitsManagement"></div>
+                </div>
+
+                <!-- Управление категориями -->
+                <div class="card">
+                    <div id="categoriesManagement"></div>
+                </div>
+
+                <!-- Управление пользователями -->
+                <div class="card">
+                    <div id="usersManagement"></div>
+                </div>
+
+                <!-- Backup / Restore -->
+                <div class="card">
+                    <div id="backupManagement"></div>
+                </div>
+
+                <!-- Журнал изменений -->
+                <div class="card">
+                    <h3 class="card-title">📜 Журнал изменений (Audit Log)</h3>
+                    <div id="auditLogContainer"></div>
+                </div>
+
+                <div class="card">
+                    <button class="btn btn-primary" onclick="settingsModule.saveSettings()">💾 Сохранить настройки</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="inventory-system.js"></script>
+        <script src="modules/inventory-validator.js"></script>
+        <script src="modules/inventory-settings.js"></script>
+        <script src="modules/inventory-backup.js"></script>
+        <script src="modules/inventory-notifications.js"></script>
+        <script src="modules/inventory-search.js"></script>
+        <script src="modules/inventory-dragdrop.js"></script>
+        <script src="modules/inventory-print.js"></script>
+        <script src="modules/inventory-roles.js"></script>
+        <script src="modules/inventory-nomenclature.js"></script>
+    <script src="modules/inventory-recipes.js"></script>
+    <script src="modules/inventory-warehouse.js"></script>
+    <script src="modules/inventory-bar.js"></script>
+    <script src="modules/inventory-egais.js"></script>
+    <script src="modules/inventory-crpt.js"></script>
+    <script src="modules/inventory-mercury.js"></script>
+    <script src="modules/inventory-reports.js"></script>
+    <script src="modules/inventory-production.js"></script>
+    <script src="modules/inventory-count.js"></script>
+    <script src="modules/inventory-integrations.js"></script>
+    <script src="modules/admin-product-cards.js"></script>
+    
+    <script>
+            // Global module instances (make them truly global)
+            var validator;
+            var settingsModule;
+            var backupModule;
+            var notificationsModule;
+            var globalSearchModule;
+            var dragDropModule;
+            var printModule;
+            var rolesModule;
+            var nomenclatureModule;
+        var recipesModule;
+        var warehouseModule;
+        var barModule;
+        var egaisModule;
+        var crptModule;
+        var mercuryModule;
+        var reportsModule;
+        var productionModule;
+        var inventoryCountModule;
+        var integrationsModule;
+
+        // Initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Initializing DANDY Inventory System...');
+            
+                // Wait for inventorySystem to be ready
+                setTimeout(() => {
+                    if (window.inventorySystem) {
+                        // Initialize core modules
+                        window.validator = validator = new InventoryValidator();
+                        window.settingsModule = settingsModule = new SettingsModule(inventorySystem);
+                        window.backupModule = backupModule = new BackupModule(inventorySystem);
+                        window.notificationsModule = notificationsModule = new NotificationsModule(inventorySystem);
+                        window.globalSearchModule = globalSearchModule = new GlobalSearchModule(inventorySystem);
+                        window.dragDropModule = dragDropModule = new DragDropModule(inventorySystem);
+                        window.printModule = printModule = new PrintModule(inventorySystem);
+                        window.rolesModule = rolesModule = new RolesModule(inventorySystem);
+                        
+                        // Initialize UI
+                        notificationsModule.init();
+                        globalSearchModule.renderSearchUI();
+                        dragDropModule.init();
+                        rolesModule.updateUserDisplay();
+                        
+                        // Применяем ограничения ролей
+                        setTimeout(() => rolesModule.applyRestrictions(), 200);
+                        
+                        // Initialize feature modules
+                        window.nomenclatureModule = nomenclatureModule = new NomenclatureModule(inventorySystem);
+                        window.recipesModule = recipesModule = new RecipesModule(inventorySystem);
+                        window.warehouseModule = warehouseModule = new WarehouseModule(inventorySystem);
+                        window.barModule = barModule = new BarModule(inventorySystem);
+                        window.egaisModule = egaisModule = new EGAISModule(inventorySystem);
+                        window.crptModule = crptModule = new CRPTModule(inventorySystem);
+                        window.mercuryModule = mercuryModule = new MercuryModule(inventorySystem);
+                        window.reportsModule = reportsModule = new ReportsModule(inventorySystem);
+                        window.productionModule = productionModule = new ProductionModule(inventorySystem);
+                        window.inventoryCountModule = inventoryCountModule = new InventoryCountModule(inventorySystem);
+                        window.integrationsModule = integrationsModule = new IntegrationsModule(inventorySystem);
+                        
+                        console.log('✅ All modules initialized');
+                        console.log('📦 Products loaded:', inventorySystem.products.length);
+                        console.log('📍 Current page:', inventorySystem.currentPage);
+                        
+                        // Инициализируем активную страницу
+                        const activePage = inventorySystem.currentPage;
+                        if (activePage === 'nomenclature' && nomenclatureModule) {
+                            console.log('🔄 Initializing nomenclature on load...');
+                            nomenclatureModule.init();
+                        }
+                        if (activePage === 'settings' && settingsModule) {
+                            console.log('⚙️ Initializing settings on load...');
+                            settingsModule.init();
+                            backupModule.renderBackupUI();
+                            
+                            // Отображаем селектор ролей
+                            const rolesSelector = document.getElementById('rolesSelector');
+                            if (rolesSelector && rolesModule) {
+                                rolesSelector.innerHTML = rolesModule.renderRoleSelector();
+                            }
+                        }
+                        
+                        // Добавляем флаг готовности
+                        window.inventorySystemReady = true;
+                        console.log('✅ System fully ready!');
+
+                        // Инициализируем графики на дашборде
+                        setTimeout(() => initDashboardCharts(), 500);
+                    }
+                }, 100);
+        });
+
+        // === Dashboard Charts ===
+        function initDashboardCharts() {
+            // 1. Динамика продаж
+            const salesCtx = document.getElementById('salesDynamicsChart');
+            if (salesCtx) {
+                new Chart(salesCtx, {
+                    type: 'line',
+                    data: {
+                        labels: Array.from({length: 30}, (_, i) => `День ${i+1}`),
+                        datasets: [{
+                            label: 'Выручка, ₽',
+                            data: Array.from({length: 30}, () => Math.floor(Math.random() * 50000) + 30000),
+                            borderColor: '#eebc5c',
+                            backgroundColor: 'rgba(238, 188, 92, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: '#094a45',
+                                titleColor: '#eebc5c',
+                                bodyColor: '#F3EADB'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { color: '#F3EADB' },
+                                grid: { color: 'rgba(255,255,255,0.1)' }
+                            },
+                            x: {
+                                ticks: { color: '#F3EADB', maxRotation: 45 },
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 2. ТОП-10 товаров
+            const topCtx = document.getElementById('topProductsChart');
+            if (topCtx) {
+                const topProducts = inventorySystem.products
+                    .sort((a, b) => (b.stock || 0) - (a.stock || 0))
+                    .slice(0, 10);
+
+                new Chart(topCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: topProducts.map(p => p.name.substring(0, 20)),
+                        datasets: [{
+                            label: 'Остаток',
+                            data: topProducts.map(p => p.stock || 0),
+                            backgroundColor: '#eebc5c',
+                            borderColor: '#eebc5c',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: '#094a45',
+                                titleColor: '#eebc5c',
+                                bodyColor: '#F3EADB'
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                ticks: { color: '#F3EADB' },
+                                grid: { color: 'rgba(255,255,255,0.1)' }
+                            },
+                            y: {
+                                ticks: { color: '#F3EADB' },
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 3. Рентабельность по категориям
+            const profitCtx = document.getElementById('profitabilityChart');
+            if (profitCtx) {
+                const categories = [...new Set(inventorySystem.products.map(p => p.category).filter(Boolean))].slice(0, 7);
+                
+                new Chart(profitCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: categories,
+                        datasets: [{
+                            data: categories.map(() => Math.floor(Math.random() * 40) + 50),
+                            backgroundColor: [
+                                '#eebc5c',
+                                '#ff69b4',
+                                '#10b981',
+                                '#3b82f6',
+                                '#f59e0b',
+                                '#8b5cf6',
+                                '#ef4444'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { color: '#F3EADB', padding: 10 }
+                            },
+                            tooltip: {
+                                backgroundColor: '#094a45',
+                                titleColor: '#eebc5c',
+                                bodyColor: '#F3EADB',
+                                callbacks: {
+                                    label: (context) => `${context.label}: ${context.parsed}%`
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 4. Оборачиваемость
+            const turnoverCtx = document.getElementById('turnoverChart');
+            if (turnoverCtx) {
+                new Chart(turnoverCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+                        datasets: [{
+                            label: 'Продажи',
+                            data: [120, 150, 180, 170, 200, 250, 230],
+                            backgroundColor: '#10b981'
+                        }, {
+                            label: 'Поступления',
+                            data: [80, 90, 110, 100, 130, 160, 140],
+                            backgroundColor: '#3b82f6'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: { color: '#F3EADB', padding: 10 }
+                            },
+                            tooltip: {
+                                backgroundColor: '#094a45',
+                                titleColor: '#eebc5c',
+                                bodyColor: '#F3EADB'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { color: '#F3EADB' },
+                                grid: { color: 'rgba(255,255,255,0.1)' }
+                            },
+                            x: {
+                                ticks: { color: '#F3EADB' },
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+
+            console.log('📊 Dashboard charts initialized');
+        }
+
+        // === Tab Slider (автоматическая прокрутка) ===
+        (function(){
+            const tabsWrap = document.querySelector('.tabs-wrap');
+            const tabsContainer = document.getElementById('tabsContainer');
+            const underline = tabsWrap.querySelector('.tabs-underline');
+            const thumb = underline.querySelector('.thumb');
+            
+            function updateThumb() {
+                const trackWidth = underline.offsetWidth;
+                const totalWidth = tabsContainer.scrollWidth;
+                const visibleWidth = tabsContainer.clientWidth;
+                const maxScroll = Math.max(1, totalWidth - visibleWidth);
+                const thumbWidth = Math.max(40, (visibleWidth / totalWidth) * trackWidth);
+                const x = (tabsContainer.scrollLeft / maxScroll) * Math.max(0, trackWidth - thumbWidth);
+                
+                underline.style.setProperty('--w', thumbWidth + 'px');
+                underline.style.setProperty('--x', x + 'px');
+            }
+            
+            function setScrollByRatio(ratio) {
+                const maxScroll = Math.max(1, tabsContainer.scrollWidth - tabsContainer.clientWidth);
+                tabsContainer.scrollLeft = Math.min(maxScroll, Math.max(0, ratio * maxScroll));
+            }
+            
+            // Drag thumb
+            let dragging = false;
+            let startX = 0;
+            let startRatio = 0;
+            
+            thumb.addEventListener('pointerdown', e => {
+                dragging = true;
+                tabsWrap.classList.add('dragging');
+                startX = e.clientX;
+                const trackW = underline.offsetWidth;
+                const thumbW = parseFloat(getComputedStyle(underline).getPropertyValue('--w')) || 40;
+                const usable = Math.max(1, trackW - thumbW);
+                const currentX = parseFloat(getComputedStyle(underline).getPropertyValue('--x')) || 0;
+                startRatio = currentX / usable;
+                e.preventDefault();
+            });
+            
+            document.addEventListener('pointermove', e => {
+                if (!dragging) return;
+                const trackW = underline.offsetWidth;
+                const thumbW = parseFloat(getComputedStyle(underline).getPropertyValue('--w')) || 40;
+                const usable = Math.max(1, trackW - thumbW);
+                const dx = e.clientX - startX;
+                const ratio = Math.min(1, Math.max(0, startRatio + dx / usable));
+                setScrollByRatio(ratio);
+                updateThumb();
+            });
+            
+            document.addEventListener('pointerup', () => {
+                if (!dragging) return;
+                dragging = false;
+                tabsWrap.classList.remove('dragging');
+            });
+            
+            // Scroll events
+            tabsContainer.addEventListener('scroll', updateThumb, { passive: true });
+            new ResizeObserver(updateThumb).observe(tabsContainer);
+            
+            // Wheel scroll
+            tabsContainer.addEventListener('wheel', e => {
+                if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+                    tabsContainer.scrollLeft += e.deltaY;
+                    updateThumb();
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            updateThumb();
+            
+            // === Автоматическая прокрутка к активному табу ===
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function(e) {
+                    // Убираем active у всех
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    // Добавляем active к текущему
+                    this.classList.add('active');
+                    
+                    // Прокручиваем к этому табу (с небольшой задержкой для плавности)
+                    setTimeout(() => {
+                        this.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'nearest', 
+                            inline: 'center' 
+                        });
+                        updateThumb();
+                    }, 50);
+                });
+            });
+        })();
+
+        // === Notifications Dropdown ===
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notificationsDropdown');
+            if (dropdown) {
+                dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+
+        // Закрытие по клику вне
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('notificationsDropdown');
+            const bell = document.getElementById('notificationBell');
+            if (dropdown && bell && !dropdown.contains(e.target) && !bell.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+
+        // Global functions
+        function createProduct() {
+            if (nomenclatureModule) {
+                nomenclatureModule.createProduct();
+            }
+        }
+
+        function createRecipe() {
+            if (recipesModule) {
+                recipesModule.createRecipe();
+            }
+        }
+
+        function editRecipe(code) {
+            if (recipesModule) {
+                recipesModule.editRecipe(code);
+            }
+        }
+
+        function startInventory() {
+            alert('🎯 Начало инвентаризации\n\nБудет реализовано в следующей итерации');
+        }
+
+        function openBottle() {
+            if (barModule) {
+                barModule.openBottle();
+            }
+        }
+
+        function syncFlowMeter() {
+            if (barModule) {
+                barModule.syncWithFlowMeter();
+            }
+        }
+    </script>
+</body>
+</html>
+

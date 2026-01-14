@@ -1,0 +1,63 @@
+# Инструкция: Как отправить запрос для настройки Диадока
+
+## Способ 1: Через браузер (САМЫЙ ПРОСТОЙ)
+
+1. Откройте файл setup-diadoc.html в браузере
+2. Заполните форму (UUID уже вставлен)
+3. Нажмите "Сохранить конфигурацию"
+
+## Способ 2: Через консоль браузера (на странице админки)
+
+Откройте консоль браузера (F12) на странице админки и выполните:
+
+```javascript
+fetch('/api/edo/config', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        api_key: 'd8271eda-fbca-addd-5af4-87369468ef94',
+        box_id: 'd8271eda-fbca-addd-5af4-87369468ef94',
+        inn: '' // опционально
+    })
+})
+.then(r => r.json())
+.then(data => console.log('Результат:', data))
+.catch(err => console.error('Ошибка:', err));
+```
+
+## Способ 3: Через curl (в терминале)
+
+```bash
+curl -X POST https://nemchinovka.dandypizzasushi.com/api/edo/config \
+  -H "Content-Type: application/json" \
+  -d '{
+    "api_key": "d8271eda-fbca-addd-5af4-87369468ef94",
+    "box_id": "d8271eda-fbca-addd-5af4-87369468ef94",
+    "inn": ""
+  }'
+```
+
+## Способ 4: Через PowerShell (Windows)
+
+```powershell
+$body = @{
+    api_key = "d8271eda-fbca-addd-5af4-87369468ef94"
+    box_id = "d8271eda-fbca-addd-5af4-87369468ef94"
+    inn = ""
+} | ConvertTo-Json
+
+Invoke-RestMethod -Uri "https://nemchinovka.dandypizzasushi.com/api/edo/config" `
+    -Method POST `
+    -ContentType "application/json" `
+    -Body $body
+```
+
+## Проверка сохраненной конфигурации
+
+```javascript
+fetch('/api/edo/config')
+  .then(r => r.json())
+  .then(data => console.log('Текущая конфигурация:', data));
+```
+
+

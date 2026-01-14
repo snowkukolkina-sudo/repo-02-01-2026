@@ -1,0 +1,12 @@
+/* Custom CSS - дополнительные стили */
+/* Этот файл может быть использован для кастомизации стилей */
+
+/* Базовые стили для админки */
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Скрываем ошибки загрузки ресурсов */
+img[src*="logo"]:not([src*="data:"]):not([src*="http"]) {
+    display: none;
+}

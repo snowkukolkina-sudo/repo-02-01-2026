@@ -1,0 +1,343 @@
+/*
+  Condensed & small navigation styling with light active state.  
+  This version further reduces font size, compresses the letters horizontally,
+  decreases the gap between words to roughly a fifth of previous values,
+  and changes the colour to a lighter pink on hover/active without losing brightness.  
+*/
+
+:root {
+  --teal: #016a60;
+  /* Base barbie pink colour */
+  --pink: #ff2aa7;
+  /* Active state: a brighter, more saturated barbie pink for pressed tabs.  */
+  --pink-active: #ff54c0;
+}
+
+body {
+  margin: 0;
+  background-color: var(--teal);
+  overflow-x: hidden;
+}
+
+.tabs-wrap {
+  position: relative;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 0.30rem 1.20rem 0.05rem;
+  scrollbar-width: none;
+  /* Улучшенная прокрутка для мобильных устройств */
+  -webkit-overflow-scrolling: touch;
+  /* Плавная прокрутка */
+  scroll-behavior: smooth;
+  /* Обеспечиваем правильное позиционирование слайдера */
+  z-index: 1;
+  /* Улучшенная прокрутка */
+  scroll-snap-type: x mandatory;
+  scroll-padding: 0 1rem;
+}
+
+
+.tabs-wrap::-webkit-scrollbar {
+  display: none;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  /* Reduce the gap between items by roughly a fifth */
+  /* Make the spacing between words even tighter – roughly five times smaller than the original */
+  /* Set spacing between words similar to the provided sketch: larger than our ultra‑tight version but still compact */
+  gap: clamp(0.05rem, 0.3vw, 0.15rem);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  /* Улучшенная адаптивность */
+  min-width: max-content;
+  align-items: center;
+}
+
+.tabs .tab {
+  display: block;
+  font-family: 'IntroRustG-Base2Line', sans-serif;
+  /* Reduce the height of the text */
+  /* Make the letters modest in height to improve legibility */
+  font-size: 0.85rem !important;
+  /* Increase weight to make glyphs stand out without an outline */
+  font-weight: 900;
+  line-height: 1 !important;
+  /* Bring letters a bit closer together */
+  letter-spacing: -0.02em;
+  color: var(--pink);
+  text-decoration: none;
+  /* Horizontal compression factor: keep letters slightly narrower */
+  --scale-x: 0.87;
+  transform-origin: left bottom;
+  transform: scaleX(var(--scale-x));
+  /* Remove heavy outline for crisp letter rendering */
+  -webkit-text-stroke: 0;
+  /* Improve glyph sharpness */
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+  transition: transform 0.2s ease, color 0.2s ease;
+  user-select: none;
+  /* Улучшенная адаптивность */
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: 0.5rem 0.4rem;
+  /* Улучшенная кликабельность */
+  cursor: pointer;
+  border-radius: 0.3rem;
+  /* Snap-точки для прокрутки */
+  scroll-snap-align: start;
+}
+
+/* Light pink on hover and active */
+.tabs .tab:hover,
+.tabs .tab.active {
+  /* When a tab is active (pressed), fill it with a brighter barbie pink and remove the outline for crisp edges */
+  color: var(--pink-active);
+  -webkit-text-stroke: 0;
+  transform: scaleX(var(--scale-x)) scale(1.05) translateY(-2px);
+}
+
+/* On hover state, lighten slightly but remain close to the base pink */
+.tabs .tab:hover {
+  color: var(--pink-active);
+  -webkit-text-stroke: 0;
+  transform: scaleX(var(--scale-x)) scale(1.05) translateY(-2px);
+}
+
+.slider {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  width: 0;
+  background-color: #ffffff;
+  border-radius: 2px;
+  transition: transform 0.3s ease, width 0.3s ease, opacity 0.3s ease;
+  /* Улучшенная видимость */
+  z-index: 2;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  /* Убираем начальную ширину */
+  min-width: 0;
+  /* Делаем слайдер видимым */
+  opacity: 1;
+  display: block;
+  /* Добавляем градиент для лучшей видимости */
+  background: linear-gradient(90deg, #ffffff 0%, #f0f0f0 100%);
+}
+
+/* Hide any existing chip-based category bars */
+nav.category-bar,
+nav.category-bar.menu-groups,
+.category-bar.menu-groups {
+  display: none !important;
+}
+
+/* Адаптивные стили для табов */
+
+/* Мобильные устройства (до 768px) */
+@media (max-width: 768px) {
+  .tabs-wrap {
+    padding: 0.4rem 1rem 0.1rem;
+  }
+  
+  .tabs {
+    gap: clamp(0.08rem, 0.5vw, 0.2rem);
+  }
+  
+  .tabs .tab {
+    font-size: 0.8rem !important;
+    letter-spacing: -0.02em;
+    --scale-x: 0.85;
+    padding: 0.5rem 0.4rem;
+  }
+  
+  .tabs .tab:hover,
+  .tabs .tab.active {
+    transform: scaleX(var(--scale-x)) scale(1.05) translateY(-1.5px);
+  }
+  
+  .slider {
+    height: 4px;
+  }
+}
+
+/* Планшеты (768px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .tabs-wrap {
+    padding: 0.4rem 1.2rem 0.1rem;
+  }
+  
+  .tabs {
+    gap: clamp(0.1rem, 0.6vw, 0.25rem);
+  }
+  
+  .tabs .tab {
+    font-size: 0.85rem !important;
+    letter-spacing: -0.02em;
+    --scale-x: 0.85;
+    padding: 0.6rem 0.5rem;
+  }
+  
+  .tabs .tab:hover,
+  .tabs .tab.active {
+    transform: scaleX(var(--scale-x)) scale(1.05) translateY(-2px);
+  }
+  
+  .slider {
+    height: 4.5px;
+  }
+}
+
+/* Десктопы (1024px+) */
+@media (min-width: 1025px) {
+  .tabs-wrap {
+    padding: 0.5rem 1.5rem 0.15rem;
+  }
+  
+  .tabs {
+    gap: clamp(0.12rem, 0.8vw, 0.3rem);
+  }
+  
+  .tabs .tab {
+    font-size: 0.9rem !important;
+    letter-spacing: -0.015em;
+    --scale-x: 0.87;
+    padding: 0.7rem 0.6rem;
+  }
+  
+  .tabs .tab:hover,
+  .tabs .tab.active {
+    transform: scaleX(var(--scale-x)) scale(1.06) translateY(-2.5px);
+  }
+  
+  .slider {
+    height: 5px;
+  }
+}
+
+/* Очень маленькие экраны (до 480px) */
+@media (max-width: 480px) {
+  .tabs-wrap {
+    padding: 0.3rem 0.8rem 0.1rem;
+  }
+  
+  .tabs {
+    gap: clamp(0.05rem, 0.4vw, 0.15rem);
+  }
+  
+  .tabs .tab {
+    font-size: 0.75rem !important;
+    letter-spacing: -0.02em;
+    --scale-x: 0.85;
+    padding: 0.4rem 0.3rem;
+  }
+  
+  .tabs .tab:hover,
+  .tabs .tab.active {
+    transform: scaleX(var(--scale-x)) scale(1.05) translateY(-1px);
+  }
+  
+  .slider {
+    height: 3px;
+  }
+}
+
+/* Большие экраны (1440px+) */
+@media (min-width: 1440px) {
+  .tabs-wrap {
+    padding: 0.6rem 2rem 0.2rem;
+  }
+  
+  .tabs {
+    gap: clamp(0.15rem, 1vw, 0.35rem);
+  }
+  
+  .tabs .tab {
+    font-size: 1rem !important;
+    letter-spacing: -0.01em;
+    --scale-x: 0.9;
+    padding: 0.8rem 0.7rem;
+  }
+  
+  .tabs .tab:hover,
+  .tabs .tab.active {
+    transform: scaleX(var(--scale-x)) scale(1.07) translateY(-3px);
+  }
+  
+  .slider {
+    height: 6px;
+  }
+}
+
+/* Дополнительные стили для улучшения адаптивности */
+
+/* Стили для улучшения прокрутки на мобильных устройствах */
+@media (max-width: 768px) {
+  .tabs-wrap {
+    /* Улучшенная прокрутка для мобильных */
+    -webkit-overflow-scrolling: touch;
+    /* Плавная прокрутка */
+    scroll-behavior: smooth;
+    /* Убираем полосы прокрутки */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .tabs-wrap::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Стили для улучшения доступности */
+@media (prefers-reduced-motion: reduce) {
+  .tabs .tab {
+    transition: none;
+  }
+  
+  .slider {
+    transition: none;
+  }
+}
+
+/* Стили для улучшения контрастности */
+@media (prefers-contrast: high) {
+  .tabs .tab {
+    color: #ffffff;
+  }
+  
+  .tabs .tab:hover,
+  .tabs .tab.active {
+    color: #ff69b4;
+  }
+  
+  .slider {
+    background: #ffffff !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+  }
+}
+
+/* Дополнительные стили для слайдера */
+.slider::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 1px;
+}
+
+.slider::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 1px;
+}

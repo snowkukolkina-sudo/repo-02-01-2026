@@ -8863,7 +8863,8 @@ function handleImportProducts($pdo) {
             $headLower = mb_strtolower((string)$head, 'UTF-8');
             $isLpMotor = (mb_strpos($headLower, '<yml_catalog', 0, 'UTF-8') !== false) && (
                 mb_strpos($headLower, '<platform>mottor</platform>', 0, 'UTF-8') !== false ||
-                mb_strpos($headLower, '<categories>', 0, 'UTF-8') !== false
+                mb_strpos($headLower, '<platform>lpmotor</platform>', 0, 'UTF-8') !== false ||
+                mb_strpos($headLower, '<platform>lp-motor</platform>', 0, 'UTF-8') !== false
             );
 
             if ($isLpMotor) {
@@ -8881,9 +8882,22 @@ function handleImportProducts($pdo) {
 
                 $importedCount = intval(($stats['parents_created'] ?? 0)) + intval(($stats['variants_created'] ?? 0)) + intval(($stats['modifiers_created'] ?? 0));
                 $updatedCount = intval(($stats['parents_updated'] ?? 0)) + intval(($stats['variants_updated'] ?? 0)) + intval(($stats['modifiers_updated'] ?? 0));
-                $errorsCount = 0;
-                $errors = [];
-                $receiptMeta = null;
+                $totalTouched = $importedCount + $updatedCount;
+                if ($totalTouched === 0) {
+                    // Fallback to legacy importer if LPmotor import yields nothing (often a false-positive detection)
+                    $result = processYMLFile($pdo, $fileTmpPath, $updateExisting, $importHidden, $logPath, $defaultAccountCode, $defaultSupplierName, $defaultContractNumber, $defaultPaymentTermDays, $defaultWarehouseId, $fieldMapping);
+                    $importedCount = $result['created'];
+                    $updatedCount = $result['updated'];
+                    $errorsCount = $result['errors'];
+                    $errors = $result['errorMessages'];
+                    if (isset($result['receipt']) && is_array($result['receipt'])) {
+                        $receiptMeta = $result['receipt'];
+                    }
+                } else {
+                    $errorsCount = 0;
+                    $errors = [];
+                    $receiptMeta = null;
+                }
             } else {
                 // Legacy parser for generic XML/YML feeds (keeps inventory receipt support, field mapping, etc.)
                 $result = processYMLFile($pdo, $fileTmpPath, $updateExisting, $importHidden, $logPath, $defaultAccountCode, $defaultSupplierName, $defaultContractNumber, $defaultPaymentTermDays, $defaultWarehouseId, $fieldMapping);
@@ -11855,14 +11869,14 @@ function processYMLFile($pdo, $filePath, $updateExisting, $importHidden, $logPat
 
     $insertStmt = $pdo->prepare("
         INSERT INTO products (name, description, price, category, image_url, available, sku, category_path, weight, calories, cost, purchase_price, sale_price, stock_qty, unit, ingredients, supplier_code, contract_number, payment_term_days, account_code, visible_on_site, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, datetime('now'))
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
     ");
     
     $checkByNameStmt = $pdo->prepare("SELECT id FROM products WHERE name = ? LIMIT 1");
     $checkBySkuStmt = $pdo->prepare("SELECT id FROM products WHERE sku = ? AND sku != '' LIMIT 1");
     $updateStmt = $pdo->prepare("
         UPDATE products
-        SET price = ?, category = ?, available = ?, sku = COALESCE(?, sku), category_path = COALESCE(?, category_path), weight = ?, calories = ?, cost = COALESCE(?, cost), purchase_price = COALESCE(?, purchase_price), sale_price = COALESCE(?, sale_price), stock_qty = COALESCE(?, stock_qty), unit = COALESCE(?, unit), ingredients = COALESCE(?, ingredients), supplier_code = COALESCE(?, supplier_code), contract_number = COALESCE(?, contract_number), payment_term_days = COALESCE(?, payment_term_days), account_code = COALESCE(?, account_code), description = COALESCE(?, description), image_url = COALESCE(?, image_url)
+        SET price = ?, category = ?, available = ?, visible_on_site = ?, sku = COALESCE(?, sku), category_path = COALESCE(?, category_path), weight = ?, calories = ?, cost = COALESCE(?, cost), purchase_price = COALESCE(?, purchase_price), sale_price = COALESCE(?, sale_price), stock_qty = COALESCE(?, stock_qty), unit = COALESCE(?, unit), ingredients = COALESCE(?, ingredients), supplier_code = COALESCE(?, supplier_code), contract_number = COALESCE(?, contract_number), payment_term_days = COALESCE(?, payment_term_days), account_code = COALESCE(?, account_code), description = COALESCE(?, description), image_url = COALESCE(?, image_url)
         WHERE id = ?
     ");
 
@@ -12106,6 +12120,7 @@ function processYMLFile($pdo, $filePath, $updateExisting, $importHidden, $logPat
             if ($importHidden) {
                 $availableBool = 0;
             }
+            $visibleOnSite = $importHidden ? 0 : 1;
             
             // Use picture or url as image_url
             $imageUrl = !empty($picture) ? $picture : $url;
@@ -12217,6 +12232,7 @@ function processYMLFile($pdo, $filePath, $updateExisting, $importHidden, $logPat
                     $priceDecimal,
                     $categoryName,
                     $availableBool,
+                    $visibleOnSite,
                     $sku !== '' ? $sku : null,
                     $categoryPath !== '' ? $categoryPath : null,
                     $weight,
@@ -12267,7 +12283,8 @@ function processYMLFile($pdo, $filePath, $updateExisting, $importHidden, $logPat
                     $supplierCodeValue,
                     $contractNumberValue,
                     $paymentTermDaysValue,
-                    $accountCodeValueLocal
+                    $accountCodeValueLocal,
+                    $visibleOnSite
                 ]);
                 $newId = intval($pdo->lastInsertId());
                 if ($newId > 0 && $imageUrl !== '') {
@@ -18420,4 +18437,3 @@ function handleIntegrationsEvents() {
     }
 }
 ?>
-

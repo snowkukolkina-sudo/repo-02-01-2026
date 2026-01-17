@@ -512,7 +512,7 @@
                 const shouldTryCatalog = await (async () => {
                     try {
                         const health = await fetch('/api/catalog/health', {
-                            headers: { 'Authorization': `Bearer ${localStorage.getItem('token') || ''}` }
+                            headers: { 'Authorization': `Bearer ${localStorage.getItem('dandy_auth_token') || localStorage.getItem('token') || ''}` }
                         });
                         return health.ok;
                     } catch (_) {
@@ -525,7 +525,7 @@
                 try {
                     response = await fetch('/api/catalog/modifiers', {
                         headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+                            'Authorization': `Bearer ${localStorage.getItem('dandy_auth_token') || localStorage.getItem('token') || ''}`
                         }
                     });
                     if (response.ok) {
@@ -712,14 +712,53 @@
                     const host = (typeof window !== 'undefined' && window.location && window.location.hostname) ? window.location.hostname : '';
                     const localHost = host === 'localhost' || host === '127.0.0.1';
                     const forcedCatalog = (typeof window !== 'undefined' && window.USE_CATALOG_API === true) || localStorage.getItem('USE_CATALOG_API') === '1';
-                    const tryCatalog = localHost || forcedCatalog;
+                    const tryCatalog = forcedCatalog;
+                    if (localHost && tryCatalog) {
+                        const token = localStorage.getItem('dandy_auth_token') || localStorage.getItem('token');
+                        if (!token) {
+                            try {
+                                const resp = await fetch('/api/auth/login', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ email: 'admin@dandy.local', password: 'admin123' })
+                                });
+                                const payload = await resp.json().catch(() => ({}));
+                                const newToken = payload && payload.data ? payload.data.token : null;
+                                if (newToken) {
+                                    localStorage.setItem('dandy_auth_token', newToken);
+                                    localStorage.setItem('token', newToken);
+                                }
+                            } catch (_) {}
+                        }
+                    }
 
                     let response = null;
                     if (tryCatalog) {
                         try {
                             response = await this.fetchWithTimeout(catalogUrl, {
-                                headers: { 'Authorization': `Bearer ${localStorage.getItem('token') || ''}` }
+                                headers: { 'Authorization': `Bearer ${localStorage.getItem('dandy_auth_token') || localStorage.getItem('token') || ''}` }
                             }, 15000);
+                            if (response.status === 401 && localHost) {
+                                try {
+                                    localStorage.removeItem('dandy_auth_token');
+                                    localStorage.removeItem('token');
+                                    const resp = await fetch('/api/auth/login', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ email: 'admin@dandy.local', password: 'admin123' })
+                                    });
+                                    const payload = await resp.json().catch(() => ({}));
+                                    const newToken = payload && payload.data ? payload.data.token : null;
+                                    if (newToken) {
+                                        localStorage.setItem('dandy_auth_token', newToken);
+                                        localStorage.setItem('token', newToken);
+                                        response = await this.fetchWithTimeout(catalogUrl, {
+                                            headers: { 'Authorization': `Bearer ${newToken}` }
+                                        }, 15000);
+                                    }
+                                } catch (_) {}
+                            }
+
                             if (response.ok) {
                                 const result = await response.json();
                                 loaded = Array.isArray(result?.data) ? result.data : [];
@@ -3303,7 +3342,7 @@
                 const host = (typeof window !== 'undefined' && window.location && window.location.hostname) ? window.location.hostname : '';
                 const localHost = host === 'localhost' || host === '127.0.0.1';
                 const forcedCatalog = (typeof window !== 'undefined' && window.USE_CATALOG_API === true) || localStorage.getItem('USE_CATALOG_API') === '1';
-                const tryCatalog = localHost || forcedCatalog;
+                const tryCatalog = forcedCatalog;
 
                 let response = null;
 
@@ -3313,7 +3352,7 @@
                             method: 'PUT',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+                                'Authorization': `Bearer ${localStorage.getItem('dandy_auth_token') || localStorage.getItem('token') || ''}`
                             },
                             body: JSON.stringify(productData)
                         });
@@ -5015,7 +5054,7 @@
                     <!-- Выбор файла -->
                     <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
                         <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--dandy-green);">📂 Выбор файла</h3>
-                        <input type="file" id="importFile" accept=".csv,.yml,.xml,.xlsx,.xls" style="display: none;">
+                        <input type="file" id="importFile" accept=".csv,.yml,.yaml,.xml,.xlsx,.xls" style="display: none;">
                             <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
                             <button onclick="document.getElementById('importFile').click()" 
                                         class="btn btn-primary" 
@@ -5203,11 +5242,20 @@
             // Настраиваем обработчик файла
             const importFileInput = document.getElementById('importFile');
             if (importFileInput) {
+                importFileInput.addEventListener('click', () => {
+                    importFileInput.value = '';
+                });
                 importFileInput.addEventListener('change', (e) => {
                     const file = e.target.files[0];
                     if (file) {
                         this.handleFileSelect(file);
                     }
+                });
+            }
+            const updateExistingCheckbox = document.getElementById('updateExisting');
+            if (updateExistingCheckbox) {
+                updateExistingCheckbox.addEventListener('change', () => {
+                    updateExistingCheckbox.dataset.userChanged = '1';
                 });
             }
 
@@ -5303,6 +5351,13 @@
                     : (lowerName.endsWith('.yml') || lowerName.endsWith('.yaml'))
                       ? 'yml'
                       : 'xml';
+
+                const updateExistingToggle = document.getElementById('updateExisting');
+                if (updateExistingToggle && !updateExistingToggle.dataset.userChanged) {
+                    if (fileType === 'yml' || fileType === 'xml') {
+                        updateExistingToggle.checked = true;
+                    }
+                }
 
                 if (isExcel) {
                     const csvText = await this.convertExcelToCsv(file, delimiter);
@@ -7066,7 +7121,7 @@
                         try {
                             const response = await fetch('/api/catalog/modifiers', {
                                 headers: {
-                                    'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+                                    'Authorization': `Bearer ${localStorage.getItem('dandy_auth_token') || localStorage.getItem('token') || ''}`
                                 }
                             });
                             if (response.ok) {

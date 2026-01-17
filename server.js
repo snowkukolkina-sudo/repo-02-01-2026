@@ -28,6 +28,9 @@ if (USE_PHP_API && START_PHP) {
             stdio: 'inherit',
             windowsHide: true
         });
+        phpProc.on('error', (err) => {
+            console.warn('[PHP] failed to start. Check PHP_BIN or PATH.', err.message);
+        });
         phpProc.on('exit', (code) => {
             console.log(`[PHP] exited with code ${code}`);
         });
@@ -47,12 +50,19 @@ const proxyToPhpIndex = (req, res) => {
     // Host should match upstream
     headers['host'] = target.host;
 
+    const originalUrl = req.originalUrl || '';
+    const incomingQuery = originalUrl.includes('?') ? originalUrl.slice(originalUrl.indexOf('?')) : '';
+    const baseQuery = target.search || '';
+    const combinedQuery = baseQuery && incomingQuery
+        ? `${baseQuery}&${incomingQuery.slice(1)}`
+        : (baseQuery || incomingQuery);
+
     const options = {
         protocol: target.protocol,
         hostname: target.hostname,
         port: target.port,
         method: req.method,
-        path: target.pathname + (target.search || ''),
+        path: target.pathname + combinedQuery,
         headers
     };
 
@@ -79,6 +89,9 @@ if (USE_PHP_API) {
         if (url.startsWith('/api/public')) return next();
         // Allow Node Diadoc OAuth helpers to stay local (optional)
         if (url.startsWith('/api/diadoc/oauth')) return next();
+        // Keep Node auth + catalog locally (avoid PHP 404s, allow role checks)
+        if (url.startsWith('/api/auth')) return next();
+        if (url.startsWith('/api/catalog')) return next();
         // Proxy everything else under /api/* to PHP
         if (url.startsWith('/api/')) return proxyToPhpIndex(req, res);
         return next();
@@ -91,6 +104,30 @@ app.use(express.urlencoded({ extended: true }));
 
 const staticDir = path.join(__dirname, 'public');
 app.use('/api/public', express.static(staticDir));
+
+// Serve static HTML/JS/CSS from project root for admin pages.
+// Block sensitive files and PHP sources from being served by Express.
+app.use((req, res, next) => {
+    if ((req.path || '').startsWith('/api/')) return next();
+
+    const blockedNames = new Set([
+        '.env',
+        'config.php',
+        'package.json',
+        'package-lock.json'
+    ]);
+    const blockedExts = new Set(['.php', '.sqlite', '.sqlite3', '.db', '.log', '.zip']);
+    const baseName = path.basename(req.path || '');
+    const ext = path.extname(req.path || '');
+
+    if (blockedNames.has(baseName) || blockedExts.has(ext)) {
+        return res.status(403).send('Forbidden');
+    }
+
+    return next();
+});
+
+app.use(express.static(__dirname, { dotfiles: 'deny', extensions: ['html'] }));
 
 const storageDir = path.join(__dirname, 'storage');
 app.use('/storage', express.static(storageDir));

@@ -4,4 +4,6 @@ logs/
 *.log
 dist/
 .DS_Store
+.codex
+.claude
 
